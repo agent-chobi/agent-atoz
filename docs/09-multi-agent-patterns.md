@@ -5,6 +5,16 @@
 hierarchical / orchestrator-worker** — 을 구조·다이어그램·선택 기준으로 정리하고,
 가장 중요한 질문인 **"그만큼의 토큰을 쓸 값이 있는가"** 를 먼저 못 박습니다.
 
+[00장](00-landscape.md)이 예고한 6패턴 중 **Sequential(pipeline)** 과 **Blackboard**
+두 가지는 이 챕터에서 별도로 다루지 않습니다. Sequential은 에이전트가 경로를 스스로
+정하지 않는 **고정 순서 파이프라인**이라 사실상 에이전트 패턴이 아니라 워크플로우이며,
+[04장](04-langgraph-state-graph.md)의 상태 그래프에 고정 엣지를 놓는 것으로 그대로
+구현됩니다(계획→생성→평가를 고정 단계로 묶는 실전 워크플로우는
+[17장 하네스 엔지니어링](17-harness-engineering.md)에서 다시 등장합니다). Blackboard의
+핵심인 "공유 상태(칠판)에 여러 에이전트가 읽고 쓰기"도 새 패턴으로 배울 것이 없습니다 —
+이미 [06장](06-short-term-memory.md)의 체크포인터와 [07장](07-long-term-memory.md)의
+스토어가 바로 그 '칠판' 역할이므로, 개념이 그쪽으로 흡수되었다고 보면 됩니다.
+
 ## 1. 먼저: 토큰 트레이드오프
 
 멀티에이전트는 공짜가 아닙니다. 에이전트 간 라우팅·핸드오프·중복 컨텍스트 때문에
@@ -14,6 +24,11 @@ hierarchical / orchestrator-worker** — 을 구조·다이어그램·선택 기
 |------|-------------------------------|-----------------|
 | **중앙집중형(supervisor 등)** | 약 **+285%** | 제어·관측이 명확해야 할 때 |
 | **독립형(swarm 등)** | 약 **+58%** | 빠른 피어 전환이 필요할 때 |
+
+위 수치는 특정 벤치마크에서 보고된 **참고치**일 뿐입니다. 작업 성격(병렬화 여지, 도구
+호출량), 핸드오프 설계, 컨텍스트 엔지니어링 수준에 따라 크게 달라지므로, 절대값이 아니라
+"중앙집중형일수록 조율 비용이 커진다"는 **방향성**으로 읽으세요([00장](00-landscape.md)
+하단 각주 참조).
 
 !!! warning "값을 하는 경우는 셋뿐"
     멀티에이전트가 비용을 정당화하는 경우는 사실상 세 가지입니다.
@@ -29,8 +44,9 @@ hierarchical / orchestrator-worker** — 을 구조·다이어그램·선택 기
 
 한 명의 **supervisor(코디네이터)** 가 모든 제어권을 쥐고, 사용자 요청을 보고 어떤
 워커에게 위임할지 결정합니다. 워커는 서로 직접 대화하지 않고 항상 supervisor를
-거칩니다(hub-and-spoke). 2026년 프로덕션의 **기본값**이며, 제어·관측·디버깅이
-가장 쉽습니다.
+거칩니다(hub-and-spoke). 회사로 치면 **모든 업무 지시와 보고가 팀장을 거치는 팀**입니다 —
+전달 단계가 하나 늘어 느려지지만, 누가 무엇을 하고 있는지 팀장이 전부 파악합니다.
+2026년 프로덕션의 **기본값**이며, 제어·관측·디버깅이 가장 쉽습니다.
 
 ```mermaid
 flowchart TB
@@ -57,11 +73,12 @@ workflow = create_supervisor(
 app = workflow.compile()   # StateGraph 를 컴파일해야 실행 가능
 ```
 
-→ 전체 실행 예제: [`examples/12_supervisor.py`](../examples/12_supervisor.py)
+→ 전체 실행 예제: [`examples/12_supervisor.py`](https://github.com/agent-chobi/agent-atoz/blob/main/examples/12_supervisor.py)
 
 ## 3. Swarm — peer-to-peer handoff
 
-중개자 없이 **피어 에이전트끼리 제어권을 직접 넘깁니다(handoff)**. 에이전트가
+중개자 없이 **피어 에이전트끼리 제어권을 직접 넘깁니다(handoff)**. 감독의 지시를
+기다리지 않고 선수끼리 공을 직접 패스하는 경기와 같습니다. 에이전트가
 handoff 도구를 호출하면 내부적으로 `Command(goto="대상에이전트")` 로 그래프 제어가
 이동합니다. supervisor를 거치지 않으므로 LLM 호출이 한 번 줄어(=지연·비용 감소),
 "누가 다음 차례인지"가 자명한 협업에 적합합니다.
@@ -90,7 +107,7 @@ workflow = create_swarm([alice, bob], default_active_agent="Alice")
 app = workflow.compile(checkpointer=checkpointer)
 ```
 
-→ 전체 실행 예제: [`examples/13_swarm.py`](../examples/13_swarm.py)
+→ 전체 실행 예제: [`examples/13_swarm.py`](https://github.com/agent-chobi/agent-atoz/blob/main/examples/13_swarm.py)
 
 핸드오프 시 **대화 전체가 아니라 요약을 넘기는 것**이 컨텍스트 엔지니어링의 정석입니다
 (→ [08장](08-context-engineering.md)).
@@ -99,7 +116,8 @@ app = workflow.compile(checkpointer=checkpointer)
 
 에이전트/워커 수가 많아지면 단일 supervisor의 라우팅 판단이 흐려집니다. 이때
 **supervisor를 계층으로 쌓아** 도메인별 팀을 만들고, 최상위 supervisor는 팀
-supervisor에게만 위임합니다. 대규모·도메인 분할 시스템에 적합합니다.
+supervisor에게만 위임합니다. 본부장이 팀원 전원을 직접 챙기는 대신 팀장에게만
+위임하는 조직도를 떠올리면 됩니다. 대규모·도메인 분할 시스템에 적합합니다.
 
 ```mermaid
 flowchart TB
@@ -119,9 +137,10 @@ flowchart TB
 ## 5. Orchestrator-Worker — 분해 → 병렬
 
 오케스트레이터가 큰 작업을 **동적으로 하위 작업으로 분해**하고, 각 조각을 워커에게
-**병렬로** 던진 뒤 결과를 취합(reduce)합니다. supervisor가 "누구에게 순차로 넘길까"라면,
-orchestrator-worker는 "몇 개로 쪼개 동시에 돌릴까"입니다. 병렬화 이득이 큰 작업
-(다중 소스 조사, 파일 일괄 처리)에서 지연을 크게 줄입니다.
+**병렬로** 던진 뒤 결과를 취합(reduce)합니다. 주방장이 주문서를 코스별로 쪼개 여러
+라인 쿡에게 동시에 맡기고 마지막 플레이팅만 직접 하는 주방과 같습니다. supervisor가
+"누구에게 순차로 넘길까"라면, orchestrator-worker는 "몇 개로 쪼개 동시에 돌릴까"입니다.
+병렬화 이득이 큰 작업(다중 소스 조사, 파일 일괄 처리)에서 지연을 크게 줄입니다.
 
 ```mermaid
 flowchart TB
@@ -170,7 +189,7 @@ flowchart LR
 
 !!! danger "안티패턴"
     - **불필요한 멀티에이전트** — 전문화·병렬·비평 어디에도 해당 없는데 나눴다면 토큰만
-      +285% 태우는 것. 단일 에이전트로 돌아가세요.
+      약 +285% 태우는 것. 단일 에이전트로 돌아가세요.
     - **핸드오프에 전체 히스토리 전달** — 요약이 아니라 대화 통째로 넘기면 컨텍스트가
       기하급수로 부풀고 품질이 떨어집니다([08장](08-context-engineering.md)).
     - **swarm에 checkpointer 누락** — 마지막 활성 에이전트를 잊어 멀티턴이 깨집니다.
@@ -194,6 +213,81 @@ flowchart LR
 
 다음 챕터는 이 패턴들의 공통 빌딩블록인 **서브에이전트**와, 이를 배터리처럼 포장한
 [Deep Agents · Skills](10-subagents-deep-agents-skills.md) 로 이어집니다.
+
+## 따라하기
+
+이 챕터의 두 패턴을 직접 실행해 봅니다 — supervisor는
+[`examples/12_supervisor.py`](https://github.com/agent-chobi/agent-atoz/blob/main/examples/12_supervisor.py),
+swarm은 [`examples/13_swarm.py`](https://github.com/agent-chobi/agent-atoz/blob/main/examples/13_swarm.py)
+입니다.
+
+**① 사전 준비**
+
+```bash
+# 저장소 루트에서 (requirements.txt 에 모두 포함되어 있음)
+pip install -U langgraph langgraph-supervisor langgraph-swarm langchain-anthropic python-dotenv
+```
+
+`.env` 에 `ANTHROPIC_API_KEY` 를 넣고, 비용을 아끼려면 파일 상단의 `MODEL` 상수를
+`claude-haiku-4-5` 로 바꾸세요.
+
+**② 실행**
+
+```bash
+python examples/12_supervisor.py   # supervisor: 리서처 → 작가 순 라우팅
+python examples/13_swarm.py        # swarm: Alice ↔ Bob peer handoff (2턴)
+```
+
+**③ 기대 출력 요지**
+
+- `12_supervisor.py` — `=== 최종 답변 ===` 아래 한국어 한 단락, 이어서
+  `=== 라우팅 추적 ===` 에 supervisor → `research_expert` → `writing_expert` 순으로
+  누가 언제 발화했는지가 찍힙니다. 이 추적 로그가 hub-and-spoke 흐름의 증거입니다.
+- `13_swarm.py` — 턴 1에서 Bob이 해적 말투로 인사하고, 턴 2에서 "5 더하기 7"을 묻자
+  Alice로 handoff 되어 12를 계산합니다. 같은 `thread_id` 로 마지막 활성 에이전트가
+  이어지는 것을 확인하세요.
+
+**④ 흔한 에러**
+
+| 증상 | 원인 · 해결 |
+|------|-------------|
+| `ModuleNotFoundError: langgraph_supervisor` / `langgraph_swarm` | 패키지 미설치 — 위 pip 명령 재실행 |
+| `ANTHROPIC_API_KEY 가 없습니다` (SystemExit) | `.env` 파일 누락 또는 키 미기입 |
+| `create_react_agent` 임포트 오류 | LangChain/LangGraph 버전 차이 — 파일 상단 주석의 대체 임포트 참고 |
+| 턴 2에서 handoff 없이 Bob이 계속 답함 | `checkpointer` 없이 compile 했거나 `thread_id` 를 턴마다 바꾼 경우 |
+
+## 실무 트레이드오프
+
+supervisor와 swarm 중 무엇을 고를지는 결국 **"조율 비용을 낼 것인가, 제어를 포기할
+것인가"** 의 선택입니다.
+
+| 기준 | Supervisor | Swarm |
+|------|-----------|-------|
+| 토큰/지연 | 라우팅마다 supervisor LLM 호출 추가 — 오버헤드 큼(중앙집중형 약 +285% 계열) | 피어 직접 handoff — 호출 한 단계 절감(독립형 약 +58% 계열) |
+| 제어 | supervisor 프롬프트 한 곳에서 정책 통제 | 각 에이전트의 handoff 판단에 분산 — 통제 지점 없음 |
+| 관측·디버깅 | 모든 흐름이 허브를 지나 추적 쉬움 | "누가 왜 넘겼나"가 분산되어 재현·디버깅 어려움 |
+| 멀티턴 상태 | 상태 관리 단순(항상 supervisor 재진입) | 마지막 활성 에이전트 기억 필요 — checkpointer 필수 |
+| 적합 상황 | 정책·감사가 중요한 프로덕션 기본값 | 다음 차례가 자명하고 전환이 잦은 협업 |
+
+## 2026 실무 트렌드
+
+- **orchestrator-worker의 실증** — Anthropic은 리드 에이전트(Opus) + 병렬 서브에이전트(Sonnet)
+  구조의 리서치 시스템이 단일 에이전트 대비 내부 평가에서 90% 이상 우수했다고 보고했습니다.
+  단, 성능 향상이 토큰 사용량과 강하게 연동된다는 점(=비용으로 성능을 사는 구조)을 함께
+  못 박았습니다.
+- **프로덕션 진입이 다수파** — LangChain의 State of Agent Engineering 조사(2026)에 따르면
+  응답 조직의 57%가 이미 에이전트를 프로덕션에 배포했고, 30%가 배포를 전제로 개발 중입니다.
+  "될까?"가 아니라 "어떻게 안정적으로 굴릴까"의 단계입니다.
+- **커스텀 그래프 → 기성 하네스** — supervisor/서브에이전트 구성을 밑바닥부터 짜는 대신
+  planning·서브에이전트가 내장된 하네스(deepagents 등)를 쓰는 흐름이 뚜렷합니다(→ [10장](10-subagents-deep-agents-skills.md)).
+
+## 실전 레퍼런스
+
+- [How we built our multi-agent research system — Anthropic Engineering](https://www.anthropic.com/engineering/multi-agent-research-system) — orchestrator-worker 패턴의 대표 프로덕션 사례. 프롬프트로 서브에이전트 폭주(단순 질문에 50개 생성 등)를 길들인 과정까지 공개
+- [State of Agent Engineering — LangChain](https://www.langchain.com/state-of-agent-engineering) — 에이전트 프로덕션 채택률·스택 통계 조사 보고서
+- [How Anthropic Built a Multi-Agent Research System — ByteByteGo](https://blog.bytebytego.com/p/how-anthropic-built-a-multi-agent) — 위 Anthropic 시스템의 아키텍처 해설(리드/서브에이전트/CitationAgent 분해)
+- [The Agent Development Lifecycle — Interrupt 26 키노트 (YouTube)](https://www.youtube.com/watch?v=jWy39wavbjY) — LangChain 창업자들이 말하는 에이전트 빌드→테스트→배포→모니터링 수명주기
+- [Building Multi-Agent Systems — Shrivu Shankar](https://blog.sshh.io/p/building-multi-agent-systems-part) — 멀티에이전트 설계 실무 노트 시리즈
 
 ## 참고 자료
 
