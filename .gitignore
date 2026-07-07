@@ -1,0 +1,23 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# 환경 변수 / 시크릿
+.env
+.env.local
+
+# 에이전트 로컬 메모리 (런타임 생성물)
+memory/
+.hermes/
+
+# MkDocs 빌드 산출물
+site/
+_site/
+
+# OS / 에디터
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

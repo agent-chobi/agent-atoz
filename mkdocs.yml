@@ -1,0 +1,90 @@
+site_name: Agent A to Z
+site_description: 멀티에이전트 오케스트레이션을 개념부터 실습까지 — Claude SDK · LangGraph · MCP · A2A · 하네스 엔지니어링
+site_url: https://agent-chobi.github.io/agent-atoz/
+repo_url: https://github.com/agent-chobi/agent-atoz
+repo_name: agent-chobi/agent-atoz
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  language: ko
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.top
+    - navigation.indexes
+    - toc.follow
+    - content.code.copy
+    - content.code.annotate
+    - search.suggest
+    - search.highlight
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: 다크 모드로 전환
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: 라이트 모드로 전환
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - footnotes
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+nav:
+  - 홈: index.md
+  - "Phase A · 기반":
+      - 00. 오케스트레이션 지형도 + SDK 비교: 00-landscape.md
+      - 01. LLM API 기초: 01-llm-api-basics.md
+      - 02. Tool Use & 에이전트 루프: 02-tool-use-agent-loop.md
+  - "Phase B · 프레임워크로 에이전트 개발":
+      - 03. LangChain 기초 (LCEL): 03-langchain-basics.md
+      - 04. LangGraph 상태 그래프: 04-langgraph-state-graph.md
+      - 05. Claude Agent SDK: 05-claude-agent-sdk.md
+  - "Phase C · 메모리 & 컨텍스트":
+      - 06. 단기 메모리 (체크포인터): 06-short-term-memory.md
+      - 07. 장기 메모리 (스토어): 07-long-term-memory.md
+      - 08. 컨텍스트 엔지니어링: 08-context-engineering.md
+  - "Phase D · 멀티에이전트 오케스트레이션":
+      - 09. 멀티에이전트 패턴: 09-multi-agent-patterns.md
+      - 10. 서브에이전트 · Deep Agents · Skills: 10-subagents-deep-agents-skills.md
+      - 11. MCP 연계: 11-mcp-integration.md
+      - 12. A2A 프로토콜: 12-a2a-protocol.md
+  - "Phase E · 프로덕션: 관측·권한·안전":
+      - 13. 디버깅 & 관측: 13-debugging-observability.md
+      - 14. 권한 & 보안 & HITL: 14-permissions-security-hitl.md
+      - 15. 평가 & 비용: 15-evaluation-cost.md
+      - 16. 셀프호스팅 런타임 (OpenClaw & Hermes): 16-self-hosted-runtimes.md
+      - 17. 하네스 엔지니어링 (캡스톤): 17-harness-engineering.md
+  - 부록:
+      - "A. SDK 비교 매트릭스": appendix-sdk-matrix.md

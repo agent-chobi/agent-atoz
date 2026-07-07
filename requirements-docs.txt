@@ -1,0 +1,9 @@
+# 문서 사이트(MkDocs Material) 빌드 전용 의존성
+# 실습 코드용 런타임 의존성은 requirements.txt 참고.
+#   pip install -r requirements-docs.txt
+#   mkdocs serve      # 로컬 미리보기 (http://127.0.0.1:8000)
+#   mkdocs build      # 정적 사이트 빌드 (site/)
+
+mkdocs>=1.6
+mkdocs-material>=9.5
+pymdown-extensions>=10.7
