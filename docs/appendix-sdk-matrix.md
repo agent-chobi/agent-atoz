@@ -35,7 +35,7 @@
     MCP 통합이 가장 깊음. 대신 Claude 모델 전용.
 
 === "OpenAI 스택"
-    **OpenAI Agents SDK.** 실험적 Swarm을 대체한 프로덕션 툴킷. 깔끔한 handoff 추상.
+    **OpenAI Agents SDK.** 실험적 Swarm을 대체한 프로덕션용 정식 SDK. 깔끔한 handoff 추상.
     OpenAI 모델 전용.
 
 === "셀프호스팅 런타임"

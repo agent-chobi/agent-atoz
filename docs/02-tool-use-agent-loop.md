@@ -119,7 +119,8 @@ flowchart TD
 ```
 
 이 순환이 바로 **생각(모델 추론) → 행동(도구 실행) → 관찰(결과를 컨텍스트에 반영)**
-이며, ReAct 패턴의 뼈대입니다. 종료 조건은 명확합니다: **`stop_reason == "end_turn"`**
+이며, ReAct 패턴의 뼈대입니다. 내비게이션이 "현재 위치 확인 → 경로 재계산"을
+반복하듯, 에이전트도 매 턴 관찰 결과를 반영해 다음 행동을 다시 정합니다. 종료 조건은 명확합니다: **`stop_reason == "end_turn"`**
 이면 모델이 더는 도구가 필요 없다고 판단한 것 — 루프를 빠져나옵니다.
 
 ```python
@@ -186,12 +187,12 @@ results.append({
     하면 안 되는구나"라고 잘못 학습해 이후 병렬성을 잃습니다. **한 번의 도구 묶음
     → 한 번의 결과 묶음**을 지키세요.
 
-## 5. 수동 루프 vs 툴 러너
+## 5. 수동 루프 vs 도구 러너
 
 방금 만든 것은 **수동 에이전트 루프**입니다. Anthropic SDK는 이 루프를 대신 돌려주는
-**툴 러너(베타)** 도 제공합니다.
+**도구 러너(베타)** 도 제공합니다.
 
-| | 수동 루프 | 툴 러너(`@beta_tool` + `tool_runner`) |
+| | 수동 루프 | 도구 러너(`@beta_tool` + `tool_runner`) |
 |--|-----------|----------------------------------------|
 | 제어 | 세밀 (승인 게이트·로깅·조건 실행) | 자동 |
 | 코드량 | 많음 | 적음 |
@@ -221,8 +222,64 @@ for message in runner:  # 루프를 SDK가 알아서 돈다
 
 ## 실습 코드
 
-- [`examples/03_tool_use.py`](../examples/README.md) — 도구 2개 정의, 단일 `tool_use`→`tool_result` 수동 처리
-- [`examples/04_agent_loop.py`](../examples/README.md) — `while` 루프로 도구를 반복 실행하는 최소 에이전트
+- [`examples/03_tool_use.py`](https://github.com/agent-chobi/agent-atoz/blob/main/examples/03_tool_use.py) — 도구 2개 정의, 단일 `tool_use`→`tool_result` 수동 처리
+- [`examples/04_agent_loop.py`](https://github.com/agent-chobi/agent-atoz/blob/main/examples/04_agent_loop.py) — `while` 루프로 도구를 반복 실행하는 최소 에이전트
+
+## 따라하기
+
+**1) 사전 준비** — [01장 따라하기](01-llm-api-basics.md#따라하기)와 동일합니다
+(가상환경 + `pip install -r requirements.txt` + `.env`의 `ANTHROPIC_API_KEY`).
+
+**2) 실행**
+
+```bash
+python examples/03_tool_use.py
+python examples/04_agent_loop.py
+```
+
+**3) 기대 출력 요지**
+
+- `03_tool_use.py` — 모델이 `get_weather`를 호출하고(`stop_reason: tool_use`), 결과를 되돌려주면 "서울은 맑고 24도…" 같은 최종 답변이 출력됩니다.
+- `04_agent_loop.py` — `[턴 0] get_temperature({'city': '부산'})` → `[턴 1] celsius_to_fahrenheit({'celsius': 21.0})`처럼 도구 호출 로그가 턴별로 찍힌 뒤, 화씨로 변환된 최종 답변이 나옵니다. 도구가 **연쇄**되는 것이 핵심 관전 포인트입니다.
+
+**4) 흔한 에러**
+
+| 증상 | 원인과 해결 |
+|------|-------------|
+| `400 invalid_request_error: ... tool_use ids were found without tool_result blocks` | 어시스턴트 응답(`content` 전체)을 히스토리에 다시 넣지 않았거나, `tool_use_id` 매칭이 어긋남 — 2절의 세 가지 규칙 재확인 |
+| 모델이 도구를 아예 안 부르고 `end_turn`으로 끝남 | 도구 `description`에 트리거 조건이 없음 — "언제 호출해야 하는가"를 설명에 명시 |
+
+## 실무 트레이드오프
+
+**자율 루프 vs 고정 워크플로우**
+
+| | 자율 에이전트 루프 | 고정 워크플로우 (코드가 순서 결정) |
+|--|--|--|
+| 유연성 | 예상 못 한 요청도 도구 조합으로 해결 | 미리 정의된 경로만 처리 |
+| 예측 가능성·디버깅 | 낮음 — 실행 경로가 매번 다를 수 있음 | 높음 — 항상 같은 순서로 재현됨 |
+| 비용 | 가변 — 턴 수만큼 LLM 호출이 누적 | 고정 — 단계 수가 정해져 있음 |
+| 적합한 곳 | 절차를 미리 못 적는 탐색형 작업 | 절차가 확정적인 반복 업무 |
+
+절차를 미리 코드로 적을 수 있다면 워크플로우가 거의 항상 더 싸고 안정적입니다.
+[00장](00-landscape.md)의 "가장 단순한 것부터" 원칙이 여기서도 적용됩니다.
+
+**도구 수와 정확도**
+
+- 도구가 많아질수록 모델이 "어떤 도구를 쓸지" 고르는 정확도가 떨어지고, 도구 정의 자체가 컨텍스트(토큰)를 잡아먹습니다.
+- 실무 처방: 도구 세트를 작게 유지하고 비슷한 도구는 통합하며, 이름에 네임스페이스(`asana_search`, `jira_search`)를 부여하세요. 도구가 수십 개를 넘으면 필요한 것만 동적으로 로드하는 tool search 계열 기능을 검토합니다.
+
+## 2026 실무 트렌드
+
+- **MCP가 도구 연결의 사실상 표준이 됐다.** 2025년 12월 Anthropic이 MCP를 Linux Foundation 산하 Agentic AI Foundation에 기증했고(OpenAI·Block 공동 참여), 직접 작성하던 `tools` 배열이 MCP 서버로 표준화·재사용되는 흐름이 뚜렷하다(→ 11장).
+- **"에이전트를 위한 도구 설계"가 별도 분과로.** Anthropic은 사람용 API와 에이전트용 도구는 설계 원칙이 다르다며 명확한 설명·네임스페이싱·평가 루프를 권고한다 — 이 챕터의 "설명에 트리거 조건 명시"가 그 출발점이다.
+- **에이전트 루프의 SDK 내장화.** 수동 루프를 SDK가 대신 돌려주는 도구 러너류 기능이 각 SDK에 들어오면서, 승인 게이트·감사 로그가 필요할 때만 수동 루프로 내려가는 이원 구조가 일반화됐다.
+
+## 실전 레퍼런스
+
+- [Writing effective tools for AI agents — Anthropic Engineering](https://www.anthropic.com/engineering/writing-tools-for-agents) — 도구 설명·네임스페이싱·평가 루프까지, 이 챕터 1절 도구 설계 원칙의 실무 확장판.
+- [How We Build Effective Agents — Barry Zhang(Anthropic), AI Engineer Summit (YouTube)](https://www.youtube.com/watch?v=D7_ipDqhtwk) — 환경·도구·시스템 프롬프트 3요소로 에이전트를 단순하게 설계하는 법.
+- [AI 에이전트와 카카오페이 결제 오픈 API 연동하기: MCP Agent Toolkit 개발기 — 카카오페이 기술 블로그](https://tech.kakaopay.com/post/kakaopay-mcp-agent-toolkit/) — 결제 API를 에이전트 도구로 안전하게 노출한 국내 프로덕션 사례.
+- [How we built our multi-agent research system — Anthropic Engineering](https://www.anthropic.com/engineering/multi-agent-research-system) — 이 챕터의 루프가 여러 개로 확장되면 무엇이 어려워지는지 미리 보기.
 
 ## 참고 자료
 

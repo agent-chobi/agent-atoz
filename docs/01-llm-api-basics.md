@@ -26,7 +26,7 @@ response = client.messages.create(
     max_tokens=1024,
     system="너는 간결한 한국어 기술 도우미다.",
     messages=[
-        {"role": "user", "content": "파리의 수도는 어디야?"},
+        {"role": "user", "content": "프랑스의 수도는 어디야?"},
     ],
 )
 
@@ -62,8 +62,9 @@ for block in response.content:
 ## 3. 무상태성 — 매번 전체 히스토리를 보낸다
 
 Messages API는 **완전한 무상태(stateless)** 입니다. 서버는 이전 대화를 기억하지
-않습니다. "멀티턴 대화"란 결국 **매 요청마다 지금까지의 전체 히스토리를 다시
-보내는 것**입니다.
+않습니다. 매번 처음 만나는 상담원과 통화하는 콜센터라고 생각하면 됩니다 — 대화를
+이어가려면 지금까지의 통화 기록 전체를 매번 건네야 합니다. 즉 "멀티턴 대화"란 결국
+**매 요청마다 지금까지의 전체 히스토리를 다시 보내는 것**입니다.
 
 ```python
 messages = []
@@ -154,7 +155,7 @@ with client.messages.stream(
 
 개별 이벤트가 필요 없다면 `.get_final_message()`만으로 전체 응답을 얻을 수
 있습니다. 이벤트 타입(`content_block_delta`, `message_delta` 등)을 직접 다루면
-사고 블록과 텍스트를 구분해 렌더링할 수 있습니다(실습 [02_streaming.py](../examples/README.md)).
+사고 블록과 텍스트를 구분해 렌더링할 수 있습니다(실습 [02_streaming.py](https://github.com/agent-chobi/agent-atoz/blob/main/examples/02_streaming.py)).
 
 ## 6. 시스템 프롬프트
 
@@ -226,8 +227,8 @@ print("예상 입력 비용: $%.4f" % (count.input_tokens * 5 / 1_000_000))  # $
 ### 프롬프트 캐싱
 
 같은 프리픽스(시스템 프롬프트, 큰 문서)를 반복해서 보낼 때, `cache_control`로
-캐시하면 캐시된 부분이 **약 90% 저렴**해집니다. 캐싱은 **프리픽스 매치**라서
-프리픽스의 한 바이트만 달라져도 그 뒤 전체가 무효화됩니다.
+캐시하면 캐시된 부분이 **약 90% 저렴**해집니다. 캐싱은 **프리픽스 매치**입니다 —
+도미노처럼, 앞쪽 한 조각(한 바이트)만 달라져도 그 뒤 전체가 와르르 무효화됩니다.
 
 ```python
 resp = client.messages.create(
@@ -279,10 +280,135 @@ except anthropic.APIConnectionError:
     SDK는 429·5xx·연결 오류를 지수 백오프로 **자동 재시도**합니다(기본 2회).
     `max_retries`로 조정하고, 그 이상이 필요할 때만 커스텀 로직을 얹으세요.
 
+## 구조화된 출력 맛보기
+
+2절의 파라미터 표에서 `output_config`에 "구조화 출력 포맷"이 스쳐 지나갔는데,
+여기서 제대로 짚고 갑니다. 응답을 자유 텍스트가 아니라 **정해진 JSON 스키마 그대로**
+받고 싶을 때 쓰는 기능입니다. "답변을 JSON으로 줘"라고 프롬프트로 부탁하는 것은
+계약서 없이 구두 약속을 받는 것과 같아서 가끔 어긋나지만, `output_config.format`은
+스키마를 **토큰 생성 단계에서 강제**하므로 파싱 실패가 원천적으로 없습니다.
+
+```python
+import json
+
+resp = client.messages.create(
+    model="claude-opus-4-8",
+    max_tokens=1024,
+    messages=[{
+        "role": "user",
+        "content": "다음에서 고객 정보를 추출해: 김철수(kim@example.com)는 엔터프라이즈 플랜을 원한다.",
+    }],
+    output_config={
+        "format": {
+            "type": "json_schema",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "email": {"type": "string"},
+                    "plan": {"type": "string"},
+                },
+                "required": ["name", "email", "plan"],
+                "additionalProperties": False,
+            },
+        }
+    },
+)
+
+data = json.loads(next(b.text for b in resp.content if b.type == "text"))
+print(data["name"])  # "김철수" — 키 누락·타입 오류 걱정 없음
+```
+
+같은 보장이 **도구 입력**에도 필요하면(예: 결제 API에 잘못된 파라미터가 들어가면 안 될 때),
+도구 정의에 `strict: True`를 켭니다. 그러면 `tool_use.input`이 `input_schema`와 정확히
+일치함이 보장됩니다 — [02장](02-tool-use-agent-loop.md)의 도구 호출과 조합하는 패턴입니다.
+
+```python
+tools = [{
+    "name": "save_contact",
+    "description": "고객 연락처를 저장한다.",
+    "strict": True,  # 입력이 스키마와 '정확히' 일치함을 보장 (strict tool use)
+    "input_schema": {
+        "type": "object",
+        "properties": {"name": {"type": "string"}, "email": {"type": "string"}},
+        "required": ["name", "email"],
+        "additionalProperties": False,  # strict 모드에서는 필수
+    },
+}]
+```
+
+스키마 제약(재귀 스키마·길이 제한 불가 등), Pydantic 연동, 프리필 기법 대체 전략 같은
+자세한 내용은 [18장 구조화된 출력](18-structured-output.md)에서 다룹니다.
+
 ## 실습 코드
 
-- [`examples/01_basic_message.py`](../examples/README.md) — 기본 메시지 1회 호출 + 블록 순회
-- [`examples/02_streaming.py`](../examples/README.md) — 스트리밍 + 최종 usage 출력
+- [`examples/01_basic_message.py`](https://github.com/agent-chobi/agent-atoz/blob/main/examples/01_basic_message.py) — 기본 메시지 1회 호출 + 블록 순회
+- [`examples/02_streaming.py`](https://github.com/agent-chobi/agent-atoz/blob/main/examples/02_streaming.py) — 스트리밍 + 최종 usage 출력
+
+## 따라하기
+
+위 실습 코드 두 개를 단계별로 실행해 봅니다. 전체 환경 설정은
+[examples/README.md](https://github.com/agent-chobi/agent-atoz/blob/main/examples/README.md)를 참고하세요.
+
+**1) 사전 준비**
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate            # macOS/Linux: source .venv/bin/activate
+pip install -r requirements.txt   # 최소한 anthropic, python-dotenv
+copy .env.example .env            # macOS/Linux: cp — 그리고 ANTHROPIC_API_KEY=sk-ant-... 채우기
+```
+
+**2) 실행**
+
+```bash
+python examples/01_basic_message.py
+python examples/02_streaming.py
+```
+
+**3) 기대 출력 요지**
+
+- `01_basic_message.py` — 응답 블록을 순회하며 텍스트가 출력된 뒤, `stop_reason: end_turn`과 입력/출력 토큰 수가 찍힙니다.
+- `02_streaming.py` — 짧은 SF 이야기가 토큰 단위로 실시간 출력되고, 마지막에 `stop_reason`과 최종 usage(토큰 수)가 출력됩니다.
+
+**4) 흔한 에러**
+
+| 증상 | 원인과 해결 |
+|------|-------------|
+| `authentication_error (401)` | `.env`에 `ANTHROPIC_API_KEY`가 없거나 오타. 파일 위치(프로젝트 루트)와 키 값을 확인 |
+| `ModuleNotFoundError: No module named 'anthropic'` | 가상환경을 활성화하지 않고 실행. `.venv` 활성화 후 `pip install anthropic python-dotenv` |
+
+## 실무 트레이드오프
+
+**스트리밍 vs 비스트리밍**
+
+| | 비스트리밍 (`create`) | 스트리밍 (`stream`) |
+|--|--|--|
+| 코드 복잡도 | 낮음 — 응답 객체 하나 | 약간 높음 — 이벤트/델타 처리 |
+| 체감 지연 | 전체 생성이 끝나야 표시 | 첫 토큰부터 즉시 표시 |
+| 긴 출력(>~16K 토큰) | SDK가 타임아웃을 우려해 차단 | 문제 없음 — 사실상 필수 |
+| 적합한 곳 | 배치 처리, 백엔드 파이프라인, 짧은 응답 | 챗 UI, 긴 문서 생성, 에이전트 루프 |
+
+**프롬프트 캐싱 — 언제 켜나**
+
+| 상황 | 판단 |
+|------|------|
+| 큰 시스템 프롬프트/참조 문서(수천 토큰↑)를 반복 사용 | 켜라 — 두 번째 요청부터 이득 (쓰기 ~1.25×, 읽기 ~0.1×) |
+| 매 요청 프리픽스가 달라짐 (짧은 개인화 프롬프트 등) | 켜지 마라 — 쓰기 프리미엄만 내고 읽기 절감은 0 |
+| 요청 간격이 기본 TTL(5분)보다 김 | 1시간 TTL 고려 — 단 쓰기 비용 2×라 읽기 횟수로 회수돼야 함 |
+
+## 2026 실무 트렌드
+
+- **비용이 1급 엔지니어링 지표가 됐다.** 에이전트는 단순 챗봇보다 LLM 호출이 3~10배 많아, 프롬프트 캐싱(캐시 부분 최대 ~90% 절감)·배치 API(50% 할인)·모델 라우팅을 설계 단계부터 조합하는 것이 표준이 됐다.
+- **구조화 출력이 정식(GA) 기능으로.** `output_config.format`(JSON 스키마 강제)과 strict tool use가 베타 헤더 없이 제공되면서, "JSON으로 답해줘" 프롬프트나 어시스턴트 프리필 같은 우회 기법을 빠르게 대체하고 있다.
+- **샘플링 파라미터의 퇴장.** 최신 모델(Opus 4.7+/4.8, Sonnet 5)은 `temperature`/`top_p` 대신 적응형 사고와 `effort`로 동작을 제어한다 — 프롬프트와 effort 튜닝이 새로운 다이얼이다.
+
+## 실전 레퍼런스
+
+- [Structured Outputs — Claude 공식 문서](https://platform.claude.com/docs/en/build-with-claude/structured-outputs) — `output_config.format`과 strict tool use의 정식 레퍼런스.
+- [Effective context engineering for AI agents — Anthropic Engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) — 무상태 API 위에서 컨텍스트(=토큰)를 어떻게 다룰지에 대한 공식 가이드. 08장의 미리보기 격.
+- [A Hands-On Guide to Anthropic's Structured Output — Towards Data Science](https://towardsdatascience.com/hands-on-with-anthropics-new-structured-output-capabilities/) — 구조화 출력 기능을 코드로 훑는 실습 튜토리얼.
+- [Prompt Caching in 2026: Cut LLM Costs, Keep Quality](https://www.digitalapplied.com/blog/prompt-caching-2026-cut-llm-costs-engineering-guide) — 캐싱 도입 시점·프리픽스 설계에 대한 엔지니어링 가이드.
 
 다음 장에서는 이 위에 **도구**를 얹어, 모델이 스스로 행동하고 관찰하는
 [에이전트 루프](02-tool-use-agent-loop.md)를 만듭니다.

@@ -44,6 +44,28 @@ class State(TypedDict):
 `StateGraph`에 노드를 등록하고, `START`에서 시작해 `END`로 끝나는 흐름을 엣지로 잇습니다.
 분기가 필요하면 `add_conditional_edges`에 **라우팅 함수**를 넘깁니다.
 
+먼저 그래프에 등록할 두 노드를 정의합니다. 노드는 평범한 파이썬 함수이며, 1절에서 말한
+대로 **바뀐 키만 담은 부분 dict**를 반환합니다(여기서는 `messages` 하나).
+
+```python
+from langchain_core.messages import ToolMessage
+
+def call_model(state: State) -> dict:
+    """모델 호출 노드: 응답 메시지 하나를 부분 dict로 반환한다."""
+    response = model_with_tools.invoke(state["messages"])   # 03장의 .bind_tools 모델
+    return {"messages": [response]}        # add_messages 리듀서가 뒤에 이어붙인다
+
+def run_tools(state: State) -> dict:
+    """도구 실행 노드: 마지막 AI 메시지의 tool_calls를 실행해 ToolMessage로 반환한다."""
+    results = [
+        ToolMessage(content=get_weather.invoke(call["args"]), tool_call_id=call["id"])
+        for call in state["messages"][-1].tool_calls        # 03장의 @tool 함수 실행
+    ]
+    return {"messages": results}
+```
+
+이제 이 둘을 노드로 등록하고 엣지로 잇습니다.
+
 ```python
 from langgraph.graph import StateGraph, START, END
 
@@ -100,7 +122,10 @@ print(result["messages"][-1].content)
 프로덕션 에이전트는 위험한 행동(결제, 삭제, 외부 전송) 전에 **사람 승인**을 받아야 합니다
 ([14장](14-permissions-security-hitl.md)에서 심화). LangGraph는 이를 그래프 수준에서 지원합니다.
 노드 안에서 `interrupt(payload)`를 호출하면 실행이 **그 자리에서 멈추고**, 상태가
-체크포인터에 저장됩니다. 나중에 `Command(resume=값)`으로 실행을 이어갑니다.
+**체크포인터(checkpointer)** — 그래프 실행 상태를 스텝마다 저장해 두는 저장소로, 자세히는
+[06장](06-short-term-memory.md)에서 다룹니다 — 에 저장됩니다. 나중에 `Command(resume=값)`으로
+실행을 이어갑니다. 게임에 비유하면 세이브 파일(체크포인터)이 있어야 저장하고 껐다가
+그 지점부터 다시 시작할 수 있는 것과 같습니다.
 
 ```python
 from langgraph.types import interrupt, Command
@@ -137,20 +162,93 @@ flowchart LR
     이어갑니다. 다른 thread_id면 새 실행이 됩니다. 체크포인터·스레드 개념은
     [06장](06-short-term-memory.md)에서 자세히 다룹니다.
 
-## 6. 실습 코드
+## 따라하기
 
-- [`examples/06_langgraph_basics.py`](../examples/06_langgraph_basics.py) — 도구 1개를 가진
-  최소 에이전트를 `StateGraph`로 직접 조립하고, `create_react_agent` 프리빌트와 비교합니다.
-- [`examples/07_langgraph_hitl.py`](../examples/07_langgraph_hitl.py) — `interrupt`로
-  승인 게이트를 넣고 `Command(resume=...)`으로 재개하는 HITL 예제.
+이 챕터에는 예제가 두 개입니다.
 
-실행:
+- [`examples/06_langgraph_basics.py`](https://github.com/agent-chobi/agent-atoz/blob/main/examples/06_langgraph_basics.py) —
+  도구 1개를 가진 최소 에이전트를 `StateGraph`로 직접 조립하고, `create_react_agent`
+  프리빌트와 비교합니다.
+- [`examples/07_langgraph_hitl.py`](https://github.com/agent-chobi/agent-atoz/blob/main/examples/07_langgraph_hitl.py) —
+  `interrupt`로 승인 게이트를 넣고 `Command(resume=...)`으로 재개하는 HITL 예제.
+
+**1) 사전 준비**
 
 ```bash
 pip install -r requirements.txt
+copy .env.example .env        # macOS/Linux는 cp — ANTHROPIC_API_KEY 채우기
+```
+
+06번은 실제 모델을 호출하므로 API 키가 필요합니다. 07번은 **LLM 호출 없이** 그래프의
+제어 흐름(interrupt/resume)만 시연하므로 키 없이도 돌아갑니다.
+
+**2) 실행**
+
+```bash
 python examples/06_langgraph_basics.py
 python examples/07_langgraph_hitl.py
 ```
+
+**3) 기대 출력 요지**
+
+- 06번: 프리빌트(A)와 직접 조립(B) **두 방식 모두** "서울: 맑음, 24도"라는 도구 결과가 반영된
+  최종 답변을 출력합니다 — 같은 루프를 두 가지 방법으로 만들었음을 눈으로 확인합니다.
+- 07번: 첫 `invoke`에서 `__interrupt__`에 담긴 승인 요청 페이로드가 출력되며 멈추고,
+  `Command(resume="yes")`/`"no"` 두 경로로 재개했을 때 각각 "송금 실행"과 "송금 취소"류의
+  다른 결말을 보여줍니다.
+
+**4) 흔한 에러**
+
+| 증상 | 원인 → 해결 |
+|------|-------------|
+| 06번에서 인증 오류(401) | `.env`에 `ANTHROPIC_API_KEY` 미설정 |
+| `interrupt` 이후 재개가 안 되고 처음부터 다시 실행됨 | 재개 시 **다른 `thread_id`** 를 넘김 → 멈췄을 때와 같은 `config` 사용 |
+| `interrupt`가 그냥 무시됨 | `compile(checkpointer=...)` 누락 → 체크포인터 없이는 동작하지 않음 |
+| 프로세스를 껐다 켜니 재개 불가 | `InMemorySaver`는 RAM에만 저장 → 영속 재개는 06장의 `SqliteSaver` 등으로 |
+
+## 실무 트레이드오프
+
+4절의 팁("표준 루프면 프리빌트, 커스텀이 필요하면 직접")을 항목별로 펼치면 이렇습니다.
+
+| 기준 | `create_react_agent` (프리빌트) | `StateGraph` 직접 조립 |
+|------|--------------------------------|------------------------|
+| 착수 속도 | 몇 줄로 완성 | 상태·노드·엣지 설계 필요 |
+| 커스텀 노드(검증·라우팅·다중 모델) | 제한적 — 파라미터가 허용하는 범위 내 | 자유 — 임의의 함수를 노드로 |
+| HITL 게이트 위치 | 루프 구조가 고정돼 삽입 지점 제한 | 임의의 노드 사이에 승인 게이트 삽입 |
+| 상태 스키마 | 표준 `messages` 중심 | `TypedDict`로 임의 필드 추가 |
+| 학습 곡선 | 낮음 | 그래프 개념 학습 필요 |
+| 유지보수 | 프레임워크 업데이트를 따라감(1.0에서 `create_agent`로 개명) | 코어 API(`StateGraph`)는 안정적, 대신 내 코드는 내 책임 |
+
+프리빌트로 시작해서, 위 표의 오른쪽 열이 필요해지는 **첫 순간**에 풀어 헤치는 것이
+정석 경로입니다.
+
+## 2026 실무 트렌드
+
+- **LangGraph 1.0 GA(2025-10)** — 기존 API의 파괴적 변경 없이 1.0에 도달했고, durable
+  execution(체크포인트 기반 상태 영속화)과 내장 HITL이 핵심 가치로 자리잡았습니다.
+- **`create_react_agent` → `create_agent`** — `langgraph.prebuilt.create_react_agent`는
+  deprecated 경로가 되었고, 신규 코드는 `from langchain.agents import create_agent`가
+  권장됩니다(동일하게 LangGraph 런타임 위에서 동작). 기존 코드는 계속 돌지만 새 문서·예제는
+  `create_agent` 기준입니다.
+- **대기업 프로덕션 채택의 표준화** — Klarna(8,500만 사용자 고객지원), Uber(테스트 자동화로
+  약 21,000 개발자-시간 절감), LinkedIn(계층형 supervisor 채용 에이전트), Replit 등이 공식
+  케이스 스터디로 문서화되며 "LangGraph = 프로덕션 에이전트 기본기" 인식이 굳어졌습니다.
+- **배포 인프라 재편** — LangGraph Platform이 2025년 하반기 **LangSmith Deployment**로
+  리브랜딩되어, 장기 실행·스테이트풀 에이전트를 Cloud/Self-hosted/컨테이너 세 모델로
+  배포하는 것이 기본 패턴이 됐습니다.
+
+## 실전 레퍼런스
+
+- [How Klarna's AI assistant redefined customer support at scale](https://www.langchain.com/blog/customers-klarna) —
+  상담사 700명 분 업무를 처리하는 Klarna 어시스턴트의 LangGraph 공식 케이스 스터디.
+- [How Uber Built AI Agents That Save 21,000 Developer Hours (YouTube)](https://www.youtube.com/watch?v=Bugs0dVcNI8) —
+  Uber의 단위 테스트 자동 생성 에이전트 네트워크를 다룬 LangChain Interrupt 컨퍼런스 발표.
+- [How LinkedIn Built Their First AI Agent for Hiring (YouTube)](https://www.youtube.com/watch?v=NmblVxyBhi8) —
+  LinkedIn Hiring Assistant의 supervisor–서브에이전트 계층 설계 발표.
+- [Is LangGraph Used in Production?](https://blog.langchain.com/is-langgraph-used-in-production/) —
+  Replit·Uber·LinkedIn·Elastic 등 실제 프로덕션 도입 사례를 모은 공식 블로그.
+- [LangGraph Platform is now Generally Available](https://www.langchain.com/blog/langgraph-platform-ga) —
+  스테이트풀 에이전트 배포 인프라(현 LangSmith Deployment)의 GA 발표.
 
 ## 참고 자료
 

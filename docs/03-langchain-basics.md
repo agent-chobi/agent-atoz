@@ -8,8 +8,10 @@
 
 ## 1. LangChain은 무엇을 추상화하나
 
-LangChain의 존재 이유는 **"프로바이더 교체 가능성"과 "조합 가능성"** 입니다. 아래 세 조각이
-표준 인터페이스(`Runnable`)로 통일되어 있어서, 서로 자유롭게 연결·교체됩니다.
+LangChain의 존재 이유는 **"프로바이더 교체 가능성"과 "조합 가능성"** 입니다. 비유하면
+**레고 블록**입니다. 프롬프트·모델·파서라는 블록이 모두 같은 규격의 요철(표준 인터페이스
+`Runnable`)을 갖고 있어서, 어떤 순서로든 끼울 수 있고, 마음에 안 드는 블록 하나만 쏙 빼서
+다른 것으로 갈아 끼울 수 있습니다. 아래 세 조각이 그 기본 블록입니다.
 
 | 조각 | 역할 | 대표 클래스 |
 |------|------|-------------|
@@ -147,18 +149,84 @@ LangGraph가 담당하게 됩니다.
     상태 누적, 중단·재개(HITL) 같은 **제어 흐름**이 필요하면 그래프 기반의 LangGraph가
     정답입니다. 실제로 에이전트 루프는 다음 챕터에서 LangGraph로 구현합니다.
 
-## 5. 실습 코드
+## 따라하기
 
-- [`examples/05_langchain_lcel.py`](../examples/05_langchain_lcel.py) — `ChatAnthropic` +
-  `ChatPromptTemplate` + `StrOutputParser`를 LCEL로 잇고, `.invoke`·`.stream`·`.bind_tools`까지
-  한 파일에서 시연합니다.
+이 챕터의 내용은 [`examples/05_langchain_lcel.py`](https://github.com/agent-chobi/agent-atoz/blob/main/examples/05_langchain_lcel.py)
+한 파일에 담겨 있습니다 — `ChatAnthropic` + `ChatPromptTemplate` + `StrOutputParser`를 LCEL로
+잇고, `.invoke`·`.stream`·`.bind_tools`를 차례로 시연합니다.
 
-실행:
+**1) 사전 준비**
 
 ```bash
 pip install -r requirements.txt
+copy .env.example .env        # macOS/Linux는 cp — 열어서 ANTHROPIC_API_KEY 채우기
+```
+
+**2) 실행**
+
+```bash
 python examples/05_langchain_lcel.py
 ```
+
+**3) 기대 출력 요지**
+
+- `.invoke` 데모: 세 문장 이내의 한국어 답변이 **한 번에** 출력됩니다.
+- `.stream` 데모: 같은 체인의 답변이 **토큰 단위로 끊겨서** 흘러나옵니다 — 체인은 그대로 두고
+  호출 방법만 바꿨다는 점이 포인트입니다.
+- `.bind_tools` 데모: 모델이 `get_weather` 도구를 선택한 `tool_calls`(도구 이름 + 인자 dict)가
+  출력됩니다. 도구를 실제로 실행하는 루프는 다음 챕터의 몫입니다.
+
+**4) 흔한 에러**
+
+| 증상 | 원인 → 해결 |
+|------|-------------|
+| 인증 오류(401) 또는 API 키 관련 예외 | `.env` 미작성 → `copy .env.example .env` 후 `ANTHROPIC_API_KEY` 입력 |
+| `ModuleNotFoundError: langchain_anthropic` | 의존성 미설치 → `pip install -r requirements.txt` |
+| 응답은 나오는데 비용이 부담 | 파일 상단 `MODEL`을 `"claude-haiku-4-5"`로 교체 |
+
+## 실무 트레이드오프
+
+4절이 "어떤 상황에 무엇을 쓰나"였다면, 여기서는 두 경로를 **항목별로 나란히** 비교합니다.
+LangChain 추상화와 순수 `anthropic` SDK는 우열이 아니라 트레이드오프 관계입니다.
+
+| 기준 | LangChain (LCEL) | 순수 `anthropic` SDK |
+|------|------------------|----------------------|
+| 코드량 (단순 호출 1회) | 부품 조립으로 오히려 김 | 최소 — `client.messages.create` 한 번 |
+| 코드량 (스트리밍+배치+비동기) | `.stream`/`.batch`/`.ainvoke` 가 공짜 | 각각 직접 구현해야 함 |
+| 프로바이더 교체 | 모델 클래스 한 줄 교체 | 호출부 전면 수정 |
+| 디버깅 | 프레임워크 층까지 스택을 추적해야 함 | 스택이 얕아 원인 파악이 빠름 |
+| 버전 리스크 | 0.x→1.0 등 마이그레이션 이력 존재 | Anthropic API 변경만 따라가면 됨 |
+| 저수준 API 제어 (베타 헤더, 캐싱 세부) | 래퍼가 노출해 줄 때까지 대기 | 즉시 사용 가능 |
+| 생태계 (LangGraph·LangSmith) | `Runnable`이면 그대로 물림 | 별도 통합 작업 필요 |
+
+한 줄 결론: **조합·교체·생태계**가 필요하면 LangChain, **통제·단순함**이 필요하면 SDK 직접.
+
+## 2026 실무 트렌드
+
+- **LangChain 1.0 정식 출시(2025-10)** — 에이전트 중심으로 재편되어 `create_agent`가 고수준
+  진입점이 됐고, 내부 런타임은 LangGraph로 통일됐습니다. `LLMChain`·`AgentExecutor` 같은
+  레거시는 `langchain-classic` 패키지로 분리됐습니다.
+- **LCEL의 위상 변화** — `Runnable`과 파이프(`|`) 조합 자체는 계속 지원되지만, 복잡한 에이전트
+  로직은 LCEL 체인 대신 에이전트/그래프 기반 설계로 옮기라는 것이 공식 방향입니다. 이 챕터의
+  "선형 파이프에는 LCEL, 제어 흐름에는 그래프" 구분이 그대로 공식화된 셈입니다.
+- **표준 콘텐츠 블록** — v1부터 모든 챗 모델이 text/tool_call/reasoning 등을 프로바이더 중립
+  포맷(`.content_blocks`)으로 반환해, 벤더 교체 시 파싱 코드를 다시 쓸 필요가 없어졌습니다.
+- **미들웨어가 새 커스터마이징 축** — HITL 승인, 대화 요약, PII 마스킹 등을 에이전트 루프의
+  before/after 훅에 끼우는 미들웨어 시스템이 도입되어, 실무 커스터마이징의 중심이 "체인 조립"에서
+  "미들웨어 스택"으로 이동하고 있습니다.
+
+## 실전 레퍼런스
+
+- [LangChain & LangGraph 1.0: Foundations for Agent Engineering](https://www.langchain.com/blog/langchain-langgraph-1dot0) —
+  1.0 공식 발표. `create_agent`·미들웨어·표준 콘텐츠 블록·`langchain-classic` 분리를 한눈에 정리.
+- [LangChain v1 마이그레이션 가이드](https://docs.langchain.com/oss/python/migrate/langchain-v1) —
+  v0 코드(LCEL 체인, `create_react_agent` 등)를 v1로 옮기는 공식 체크리스트.
+- [Standard message content](https://blog.langchain.com/standard-message-content/) —
+  프로바이더 중립 콘텐츠 블록의 설계 배경과 `.content_blocks` 사용법(공식 블로그).
+- [How middleware lets you customize your agent harness](https://www.langchain.com/blog/how-middleware-lets-you-customize-your-agent-harness) —
+  미들웨어 아키텍처의 설계 의도와 before/after 훅 모델(공식 블로그).
+- [Lessons Learned from Upgrading to LangChain 1.0 in Production](https://towardsdatascience.com/lessons-learnt-from-upgrading-to-langchain-1-0-in-production/) —
+  실서비스 코드베이스를 1.0으로 올리며 겪은 문제를 담은 실전 후기(Towards Data Science).
 
 ## 참고 자료
 

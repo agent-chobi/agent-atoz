@@ -9,7 +9,8 @@
 ## 1. 왜 평가가 어려운가
 
 LLM 출력은 정답이 하나가 아닙니다. 요약·코드·대화처럼 **열린 출력**은 정규표현식이나
-`==` 비교로 채점할 수 없습니다. 그래서 두 가지 접근을 조합합니다.
+`==` 비교로 채점할 수 없습니다. 객관식 시험(정답 대조)이 아니라 **논술 시험(기준표 채점)**에
+가깝기 때문입니다. 그래서 성격이 다른 접근들을 조합합니다.
 
 | 방식 | 언제 | 한계 |
 |------|------|------|
@@ -51,8 +52,8 @@ judge를 신뢰하려면 몇 가지가 필요합니다.
   파싱 가능한 결과가 나옵니다. 문자열 파싱은 깨지기 쉽습니다.
 - **근거 반환** — 점수만이 아니라 "왜"를 받으면 judge의 오판을 사람이 감사할 수 있습니다.
 
-실습 [`21_llm_judge.py`](../examples/21_llm_judge.py)에서 생성→평가 분리와 JSON 채점을
-확인하세요.
+실습 [`21_llm_judge.py`](https://github.com/agent-chobi/agent-atoz/blob/main/examples/21_llm_judge.py)에서
+생성→평가 분리와 JSON 채점을 확인하세요(실행 방법은 아래 "따라하기" 참고).
 
 ## 3. 에이전트 평가셋과 오프라인 eval
 
@@ -101,8 +102,9 @@ evaluate(my_agent, data="my-dataset", evaluators=[correctness])
 
 ## 4. 토큰·비용 관리
 
-멀티에이전트는 토큰을 많이 씁니다(00장: 중앙집중형 오케스트레이션은 단일 대비 최대
-+285%). 비용을 통제하는 네 가지 레버가 있습니다.
+멀티에이전트는 토큰을 많이 씁니다(00장: 중앙집중형 오케스트레이션은 단일 대비 **약 +285%** —
+측정 조건과 워크로드에 따라 달라지는 **참고치**이므로 절대 수치보다 "몇 배 단위로 늘어난다"는
+규모감으로 읽으세요). 비용을 통제하는 네 가지 레버가 있습니다.
 
 ### 4.1 usage 추적
 
@@ -170,6 +172,80 @@ flowchart LR
 !!! note "평가와 가드레일은 한 몸"
     같은 rubric을 오프라인 eval(회귀 추적)과 온라인 가드레일(실시간 차단) 양쪽에
     재사용하면 기준이 일관됩니다.
+
+## 따라하기 — 예제 21: LLM-as-judge
+
+이 장의 실습은 [`examples/21_llm_judge.py`](https://github.com/agent-chobi/agent-atoz/blob/main/examples/21_llm_judge.py)입니다.
+생성(도우미 프롬프트)과 평가(엄격한 채점자 프롬프트)를 완전히 분리하고, judge의 점수를
+JSON 스키마로 강제해 항상 파싱 가능한 결과를 받는 흐름을 시연합니다.
+(전체 예제 목록은 [매핑표](https://github.com/agent-chobi/agent-atoz/blob/main/examples/README.md) 참고)
+
+**1) 사전 준비**
+
+```bash
+pip install anthropic python-dotenv
+# .env 에 ANTHROPIC_API_KEY=sk-ant-... 설정
+```
+
+**2) 실행**
+
+```bash
+python examples/21_llm_judge.py
+```
+
+**3) 기대 출력 요지**
+
+- 질문에 대한 **생성 답변**(3~5문장)이 먼저 출력됩니다.
+- 이어서 별도 judge 프롬프트가 채점한 **구조화된 JSON** — `score`(1~5 정수)와
+  `reasoning`(점수 근거) — 이 출력됩니다. 점수는 enum으로 1~5만 허용되므로
+  "4.5점" 같은 파싱 불가 응답이 나오지 않습니다.
+
+**4) 흔한 에러**
+
+| 증상 | 원인 / 해결 |
+|------|-------------|
+| `AuthenticationError` | `.env`의 `ANTHROPIC_API_KEY` 미설정·오타. |
+| 실행 비용이 부담됨 | 기본 모델이 Opus입니다. 파일 상단의 `MODEL`을 `claude-haiku-4-5`로 바꾸면 반복 실습에 적합합니다. |
+| judge 점수가 매번 조금씩 다름 | LLM 채점의 비결정성 — 정상입니다. 실전에서는 고정 평가셋 + 반복 측정 평균으로 흡수합니다(§3). |
+
+## 실무 트레이드오프 — 누가 채점할 것인가
+
+세 채점자는 비용·신뢰도·속도가 전부 다릅니다. 어느 하나로 통일하는 것이 아니라
+**층(layer)으로 쌓는 것**이 핵심입니다.
+
+| 축 | 규칙 기반(assertion) | LLM-as-judge | 휴먼 평가 |
+|----|---------------------|--------------|-----------|
+| 건당 비용 | 거의 0 | 모델 호출 1회(Haiku면 저렴) | **가장 비쌈**(인건비) |
+| 신뢰도 | 검사 범위 안에서는 100% | 편향·비결정성 있음 — 보정 필요 | **기준(ground truth)** |
+| 속도·규모 | 전수(100%) 적용 가능 | 대량 자동화 가능 | 소수 샘플만 현실적 |
+| 잡는 것 | 형식·필드·금칙어 | 의미 품질(정확성·관련성·톤) | 미묘한 품질·judge의 오판 |
+| 한계 | 의미를 못 봄 | 자기채점 편향, judge 자체 검증 필요 | 느리고 일관성 유지 어려움 |
+
+!!! tip "3단 구조의 경제학"
+    결정적 검사는 공짜에 가까우니 **100% 전수**로, judge는 표본 또는 위험 경로에,
+    사람은 judge를 보정하는 **소수 골든 샘플**에 씁니다. 사람의 채점 결과로 judge의
+    편향을 주기적으로 교정(calibration)하면, 비싼 채점자의 신뢰도를 싼 채점자에 이식하는 셈이 됩니다.
+
+## 2026 실무 트렌드
+
+- **품질이 배포의 1순위 장벽** — LangChain의 2026 State of AI Agents 조사에서 57%의
+  조직이 에이전트를 프로덕션에 운영 중이며, 배포를 막는 가장 큰 요인으로 "품질"을
+  꼽았습니다. 평가 체계가 곧 배포 속도를 결정합니다.
+- **비용 인지(cost-aware) 평가 파이프라인** — 결정적 검사(거의 무료)는 전 출력에,
+  LLM-judge는 샘플링·고위험 경로에 계층적으로 배치해 "신호 대비 지출"을 설계하는
+  접근이 표준화되고 있습니다.
+- **judge 보정(calibration) 워크플로** — 사람의 교정 데이터를 모아 LLM-judge를
+  정렬(align)하는 도구·절차가 제품화되어, "judge를 누가 평가하나" 문제에 대한 실무 답이 생겼습니다.
+- **캐싱 + 배치 중첩 할인** — 프롬프트 캐싱(최대 ~90% 절감)과 배치 API(50% 할인)를 겹치면
+  유효 단가가 표준가의 약 1/4까지 내려갑니다. 단, 에이전트는 태스크당 수십~수백 회를
+  호출하므로 "싼 토큰 × 많은 호출"이 여전히 큰 청구서가 됩니다 — 호출 수 자체를 줄이는 설계가 병행돼야 합니다.
+
+## 실전 레퍼런스
+
+- [Evaluating Large Language Models with OpenEvals — LangChain Blog](https://www.langchain.com/blog/evaluating-llms-with-openevals) — LLM-judge·구조화 출력용 기성 evaluator 패키지 소개.
+- [agentevals — GitHub](https://github.com/langchain-ai/agentevals) — 에이전트 궤적(trajectory) 평가용 기성 evaluator 모음.
+- [How to Calibrate LLM-as-Judge with Human Corrections — LangChain](https://www.langchain.com/resources/llm-as-a-judge) — 휴먼 교정 데이터로 judge를 보정하는 방법론.
+- [Klarna's AI assistant does the work of 700 full-time agents — OpenAI](https://openai.com/index/klarna/) — 대표적 기업 사례. 첫 달 230만 대화, 반복 문의 25% 감소 — 이후 2025년 복잡 케이스를 위해 인간 상담을 재확충한 후일담까지 포함해 "측정과 인간 감독"의 교훈으로 읽을 것.
 
 ## 6. 정리
 

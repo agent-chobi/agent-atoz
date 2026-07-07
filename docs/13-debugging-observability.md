@@ -25,7 +25,7 @@
 
 에이전트 한 턴에서 최소한 아래를 남기면 대부분의 사고를 재구성할 수 있습니다.
 
-- **프롬프트(구성된 최종 컨텍스트)** — 시스템/유저/툴 결과가 합쳐진 실제 입력. 요약·선택·격리가 적용된 뒤의 모습.
+- **프롬프트(구성된 최종 컨텍스트)** — 시스템/유저/도구 결과가 합쳐진 실제 입력. 요약·선택·격리가 적용된 뒤의 모습.
 - **도구 선택과 인자** — 어떤 도구를, 왜(직전 추론), 어떤 인자로 불렀나.
 - **도구 입출력** — 반환값, 크기, 소요 시간. (민감정보는 마스킹)
 - **에러/재시도** — 도구 예외, 파싱 실패, 재시도 횟수.
@@ -38,9 +38,12 @@
 
 ## 3. 트레이스 트리 — 멀티에이전트의 핵심 난제
 
-단일 에이전트의 트레이스는 선형에 가깝습니다. 하지만 멀티에이전트는 **병렬 워커의 span을
-하나의 논리적 실행으로 상관**시켜야 합니다. 이때 부모-자식 span 관계(트레이스 컨텍스트 전파)가
-깨지면 트레이스가 조각나 원인 추적이 불가능해집니다.
+단일 에이전트의 트레이스는 선형에 가깝습니다. 요청이 들어오고, 모델이 생각하고, 도구를 부르고,
+답이 나가는 한 줄기 흐름이라 따라가기 쉽습니다. 하지만 멀티에이전트는 **병렬 워커의 span을
+하나의 논리적 실행으로 상관**시켜야 합니다. 공항 관제탑에 비유하면, 동시에 뜨고 내리는 여러
+항공기(워커)를 따로따로 보는 게 아니라 "이 비행들은 전부 같은 운항 계획의 일부"로 묶어 보는
+것과 같습니다. 이때 부모-자식 span 관계(트레이스 컨텍스트 전파)가 깨지면 트레이스가 조각나 —
+관제 기록이 끊긴 비행처럼 — 원인 추적이 불가능해집니다.
 
 ```mermaid
 flowchart TB
@@ -133,17 +136,82 @@ flowchart LR
     비결정성 때문에 "가끔" 틀리는 버그는, 실패한 트레이스의 **정확한 입력 컨텍스트를 캡처해
     데이터셋으로 고정**한 뒤 평가([15장](15-evaluation-cost.md))로 회귀를 막는 것이 정석입니다.
 
-## 6. 실습 코드
+## 따라하기 — 예제 19: 트레이싱
 
-`examples/19_tracing.py` — LangSmith(환경변수) 또는 Langfuse(콜백)로 간단한 도구 사용
-에이전트를 트레이싱합니다. **관측 SDK가 설치/설정되지 않아도** 에이전트 자체는 동작하도록
-방어적으로 작성되어, 콘솔에 자체 span 트리를 함께 출력합니다.
-([매핑표](../examples/README.md) 참고)
+이 장의 실습은 [`examples/19_tracing.py`](https://github.com/agent-chobi/agent-atoz/blob/main/examples/19_tracing.py)입니다.
+예제 19는 **LangSmith(환경변수 설정 시) 또는 콘솔 폴백**으로 동작하며, **Langfuse는 이 장에서
+플랫폼 소개로만 다룹니다**(예제 코드에 Langfuse 연동은 없습니다). 관측 SDK가 설치/설정되지
+않아도 에이전트 자체는 항상 동작하도록 방어적으로 작성되어, 콘솔에 자체 span 트리를 출력합니다.
+(전체 예제 목록은 [매핑표](https://github.com/agent-chobi/agent-atoz/blob/main/examples/README.md) 참고)
+
+**1) 사전 준비**
+
+```bash
+pip install anthropic python-dotenv
+# .env 에 ANTHROPIC_API_KEY=sk-ant-... 설정
+
+# (선택) LangSmith로 트레이스를 전송하려면
+pip install langsmith
+export LANGSMITH_TRACING=true
+export LANGSMITH_API_KEY="ls-..."
+```
+
+**2) 실행**
 
 ```bash
 python examples/19_tracing.py
-# 트레이싱을 켜려면: LANGSMITH_TRACING=true, LANGSMITH_API_KEY=... 설정 후 재실행
 ```
+
+**3) 기대 출력 요지**
+
+- 헤더에 `트레이싱 상태:` — LangSmith ON / 설치됨+미설정 / 미설치 중 어느 모드인지 표시됩니다.
+- 콘솔에 `▶ agent_loop → llm_call (turn 0) → tool: calculator` 형태의 **중첩 span 트리**와
+  span별 소요 시간(ms), 턴마다 `stop_reason` 로그가 찍힙니다.
+- 최종 답변으로 12 × (3+4) = **84**가 나옵니다. LangSmith가 켜져 있으면
+  smith.langchain.com에서 트레이스를 확인하라는 안내가 추가됩니다.
+
+**4) 흔한 에러**
+
+| 증상 | 원인 / 해결 |
+|------|-------------|
+| `AuthenticationError` | `.env`의 `ANTHROPIC_API_KEY` 미설정·오타. |
+| LangSmith를 켰는데 웹 UI에 트레이스가 없음 | `LANGSMITH_TRACING=true` 철자와 API 키 확인. 잘못돼도 예제는 콘솔 폴백으로 계속 동작합니다. |
+| `langsmith` 미설치 | 에러가 아닙니다 — no-op 데코레이터로 폴백해 콘솔 트리만 출력합니다. |
+| 콘솔 트리 문자 깨짐 | 예제가 UTF-8 출력을 강제하지만, 오래된 Windows 터미널이면 `chcp 65001` 후 재실행. |
+
+## 실무 트레이드오프 — 트레이스를 어디에 쌓을 것인가
+
+| 축 | LangSmith (SaaS) | Langfuse (셀프호스팅) | OTel 직접 계측 |
+|----|------------------|----------------------|----------------|
+| 도입 속도 | **환경변수만 — 가장 빠름** | 서버 구축 필요(ClickHouse·Postgres·Redis 등) | 계측 코드 직접 작성 — 가장 느림 |
+| 운영 부담 | 없음(벤더가 운영) | 업그레이드·백업·스케일링을 직접 | 선택한 백엔드에 따라 다름 |
+| 데이터 주권 | 벤더 클라우드에 저장 | **내 인프라에 저장** | 내가 정한 백엔드 |
+| 벤더 종속 | 높음 | 낮음(OTel 기반) | **가장 낮음 — 백엔드 교체 자유** |
+| 잘 맞는 곳 | LangChain 스택, 빠른 시작 | 규제·프라이버시 요건, 비용 통제 | 폴리글랏 조직, 장기 표준화 |
+
+!!! tip "흔한 경로"
+    처음에는 SaaS로 빠르게 가시성을 확보하고, 규모와 규제 요건이 커지면 OTel 표준 계측으로
+    이동성을 확보하는 단계적 경로가 실무에서 흔합니다. 처음부터 완벽한 스택을 고르려고
+    출시를 늦추는 것이 가장 비싼 선택입니다.
+
+## 2026 실무 트렌드
+
+- **OTel GenAI 시맨틱 컨벤션의 확장** — LLM 호출을 넘어 에이전트 span(`invoke_agent`),
+  도구 실행 span(`execute_tool`), MCP 도구 호출까지 표준 스키마가 커버합니다. 단, 다수
+  `gen_ai.*` 속성이 아직 Development 안정성 단계라 이름이 바뀔 수 있습니다.
+- **"에이전트 관측 = 프로덕션 필수"로 격상** — 전통 APM이 못 잡는 도구 호출 재시도 루프,
+  프레임워크 업그레이드발 프롬프트 회귀, 폭주 루프의 비용 스파이크가 실제 장애의 주범으로
+  지목되면서, 관측이 "있으면 좋은 것"에서 배포 전제 조건이 됐습니다.
+- **시장 이원화** — LangSmith·Langfuse·Phoenix 같은 전문 도구와 Datadog·Honeycomb 등
+  기존 관측 강자의 LLM 관측 진입이 병행됩니다. 어느 쪽을 고르든 OTel 표준 계측이
+  나중에 갈아탈 수 있게 해 주는 보험입니다.
+
+## 실전 레퍼런스
+
+- [Inside the LLM Call: GenAI Observability with OpenTelemetry](https://opentelemetry.io/blog/2026/genai-observability/) — OTel 공식 블로그의 GenAI 관측 해설(2026).
+- [How OpenTelemetry Traces LLM Calls, Agent Reasoning, and MCP Tools — Greptime](https://greptime.com/blogs/2026-05-09-opentelemetry-genai-semantic-conventions) — 에이전트 추론·MCP 도구까지 이어지는 span 트리의 실전 해부.
+- [OpenTelemetry GenAI Semantic Conventions — MLflow Docs](https://mlflow.org/docs/latest/genai/tracing/opentelemetry/genai-semconv/) — 컨벤션 필드를 실제 트레이싱 코드에 매핑해 보여주는 문서.
+- [How We Build Effective Agents — Barry Zhang, Anthropic (AI Engineer Summit, YouTube)](https://youtu.be/D7_ipDqhtwk) — "에이전트의 관점(컨텍스트)에서 에러를 보라"는 디버깅 관점을 담은 발표.
 
 ## 참고 자료
 

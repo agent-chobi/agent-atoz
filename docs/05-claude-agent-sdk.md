@@ -27,16 +27,33 @@ LangGraph에서는 `@tool`로 도구를 **직접** 정의했습니다. Claude Ag
 이 도구들은 **파일시스템 경계·권한 모드**로 통제됩니다. 즉 "무엇을 할 수 있는가"가 옵션
 한 줄로 제어됩니다 — 이것이 이 SDK의 핵심 가치입니다.
 
-!!! warning "전제 조건 — Node.js가 필요하다"
-    Claude Agent SDK의 내장 도구는 Claude Code CLI(Node.js 앱) 위에서 돕니다. 그래서
-    **Node.js 18+ 가 설치돼 있어야** 합니다(CLI 바이너리는 패키지에 번들됨). 또한
-    `ANTHROPIC_API_KEY` 환경변수가 필요합니다. `pip install claude-agent-sdk` 만으로는
-    파이썬 3.10+ 와 Node 런타임 둘 다 준비돼야 정상 동작합니다. *(설치 버전에 따라 세부
-    사항이 다를 수 있어 대조 필요.)*
+!!! warning "필수 전제 — Node.js 18+ 없이는 동작하지 않는다"
+    이 SDK는 파이썬 패키지지만, 내장 도구는 **Claude Code CLI(Node.js 앱)** 위에서 돕니다.
+    즉 `pip install claude-agent-sdk` **만으로는 부족**하고, 다음 세 가지가 모두 준비돼야
+    합니다(하나라도 빠지면 이 챕터 코드는 실행되지 않습니다):
+
+    1. **Node.js 18+** — CLI 바이너리는 패키지에 번들되지만 Node 런타임 자체는 별도 설치
+    2. **Python 3.10+**
+    3. **`ANTHROPIC_API_KEY`** 환경변수
+
+    *(설치 버전에 따라 세부 사항이 다를 수 있어 대조 필요.)*
 
 ## 2. 두 가지 진입점 — `query()` 와 `ClaudeSDKClient`
 
 SDK는 비동기(`async`)가 기본입니다. 사용 방식은 두 가지입니다.
+
+!!! info "처음 보는 async/await — 왜 에이전트 SDK는 비동기인가"
+    에이전트는 실행 시간 대부분을 **기다리며** 보냅니다 — 모델 응답, 도구 실행, 네트워크
+    왕복. 비동기는 이 대기 시간에 프로그램이 다른 일을 할 수 있게 하는 파이썬 문법입니다.
+    주문을 넣고 음식이 나올 때까지 다른 테이블을 받는 웨이터를 떠올리면 됩니다. 게다가
+    에이전트의 응답은 한 덩어리가 아니라 **메시지 스트림**으로 도착하므로, 도착하는 대로
+    하나씩 받는 비동기 반복이 자연스러운 인터페이스입니다. 최소 문법 세 가지만 알면
+    이 챕터의 코드를 전부 읽을 수 있습니다.
+
+    - `async def main(): ...` — "기다릴 수 있는 함수"(코루틴) 정의
+    - `await 표현식` / `async for x in 스트림:` — 결과(또는 다음 항목)가 올 때까지
+      이 함수만 잠들고, 프로그램 전체는 멈추지 않음
+    - `asyncio.run(main())` — 일반 코드(최상위)에서 코루틴을 실행하는 진입점
 
 | 진입점 | 특성 | 언제 |
 |--------|------|------|
@@ -137,13 +154,56 @@ options = ClaudeAgentOptions(
 )
 ```
 
-## 6. 장단점 — 언제 이 SDK인가
+## 따라하기
 
-| 강점 | 약점 |
-|------|------|
-| 프로덕션급 내장 도구 즉시 사용 | **Claude 전용** (프로바이더 교체 불가) |
-| MCP·서브에이전트 최심 통합 | Node.js 런타임 의존 |
-| Claude Code와 동일 런타임의 검증된 동작 | 비동기 전용, 세밀한 그래프 제어는 약함 |
+이 챕터의 예제는 [`examples/08_claude_agent_sdk.py`](https://github.com/agent-chobi/agent-atoz/blob/main/examples/08_claude_agent_sdk.py)
+입니다 — `query()`로 내장 도구(`Read`/`Glob`/`Grep`)를 사용해 저장소의 `examples/` 폴더를
+조사하는 최소 에이전트. 웹으로 확인한 실제 API를 따르며, 버전에 민감한 부분은 주석으로
+표시했습니다.
+
+**1) 사전 준비** — 이 예제만의 추가 전제가 있습니다.
+
+```bash
+node --version                    # v18 이상인지 먼저 확인! (없으면 nodejs.org에서 설치)
+pip install -r requirements.txt   # claude-agent-sdk 포함
+copy .env.example .env            # macOS/Linux는 cp — ANTHROPIC_API_KEY 채우기
+```
+
+**2) 실행**
+
+```bash
+python examples/08_claude_agent_sdk.py
+```
+
+**3) 기대 출력 요지**
+
+- 에이전트가 `Glob`/`Read`/`Grep`으로 `examples/` 폴더를 훑은 뒤, 조사 결과(파일 구성 요약
+  등)를 텍스트로 **스트리밍** 출력합니다.
+- 마지막에 `ResultMessage`(비용·소요 턴 수 요약)가 출력됩니다 — 우리가 도구를 하나도 정의하지
+  않았는데 파일 작업이 일어났다는 점이 이 SDK의 핵심입니다.
+
+**4) 흔한 에러**
+
+| 증상 | 원인 → 해결 |
+|------|-------------|
+| CLI를 찾을 수 없다는 예외(`CLINotFoundError` 류) 또는 즉시 종료 | **Node.js 미설치** — 이 예제의 압도적 1위 에러. `node --version`으로 확인 후 Node 18+ 설치 |
+| `claude-agent-sdk 가 설치되지 않았습니다` (SystemExit) | `pip install -r requirements.txt` 미실행 |
+| 인증 오류 | `.env`에 `ANTHROPIC_API_KEY` 미설정 |
+| 모델 이름 오류 | 이 SDK는 축약 별칭(`"opus"`/`"sonnet"`/`"haiku"`)을 사용 — 다른 예제의 전체 모델명과 형식이 다름 |
+
+## 실무 트레이드오프
+
+이 SDK를 채택할지는 결국 "내장 런타임의 힘"과 "종속성"의 교환입니다.
+
+| 기준 | Claude Agent SDK | LangGraph (비교 기준) |
+|------|------------------|----------------------|
+| 내장 도구 | 파일·셸·검색·웹 등 프로덕션급 도구 즉시 사용 | 전부 직접 정의(`@tool`) |
+| 프로바이더 | **Claude 전용** — 교체 불가 | 모델 클래스 교체로 벤더 중립 |
+| 제어 흐름 | 에이전트 루프가 블랙박스에 가까움 | 상태 그래프로 노드 단위 제어 |
+| 권한/안전 | `permission_mode` 등 권한 체계 내장 | 직접 설계 |
+| 런타임 의존 | Python + **Node.js 18+** 이중 의존 | Python만 |
+| 프로그래밍 모델 | 비동기 전용(async) | 동기·비동기 모두 |
+| MCP·서브에이전트 | 1급 시민으로 최심 통합 | 별도 통합 작업 |
 
 !!! tip "선택 기준"
     **코드베이스에서 파일·셸을 다루는 에이전트**(코딩·자동화·DevOps)라면 Claude Agent SDK가
@@ -151,18 +211,28 @@ options = ClaudeAgentOptions(
     핵심이면 [LangGraph](04-langgraph-state-graph.md)가 낫습니다. 셋을 비교한 표는
     [부록 A](appendix-sdk-matrix.md)에 있습니다.
 
-## 7. 실습 코드
+## 2026 실무 트렌드
 
-- [`examples/08_claude_agent_sdk.py`](../examples/08_claude_agent_sdk.py) — `query()`로
-  내장 도구(`Read`/`Glob`/`Grep`)를 사용해 폴더를 조사하는 최소 에이전트. 웹으로 확인한
-  실제 API를 따르며, 버전에 민감한 부분은 주석으로 표시했습니다.
+- **"코딩 에이전트"를 넘어 범용 에이전트 SDK로** — Anthropic은 SDK의 설계 철학을 "에이전트에게
+  컴퓨터를 주라"로 정리하고, 금융 분석·개인 비서·고객 지원 등 비(非)코딩 유스케이스를 공식
+  예시로 밀고 있습니다. 리브랜딩(Code SDK → Agent SDK)이 단순 개명이 아니라 방향 전환이라는 뜻.
+- **로컬 SDK ↔ 매니지드 인프라 이원화** — 2026년 "Claude Managed Agents"(호스티드 API +
+  세션별 매니지드 샌드박스)가 출시되면서, "Agent SDK로 로컬 프로토타이핑 → Managed Agents로
+  프로덕션 전환"이 공식 안내 경로가 됐습니다.
+- **장기 실행 에이전트 하네스·Agent Skills의 표준화** — 컨텍스트 관리, 파일시스템 기반
+  스킬(`SKILL.md`) 등 실무 패턴이 Anthropic 엔지니어링 블로그를 통해 잇달아 정리되며
+  사실상의 교과서가 되고 있습니다(이 책 10·17장과 연결).
 
-실행:
+## 실전 레퍼런스
 
-```bash
-pip install -r requirements.txt   # claude-agent-sdk 포함 + Node.js 18+ 필요
-python examples/08_claude_agent_sdk.py
-```
+- [Building agents with the Claude Agent SDK](https://www.anthropic.com/engineering/building-agents-with-the-claude-agent-sdk) —
+  SDK를 만든 이유와 "에이전트에게 컴퓨터를" 철학, 비코딩 에이전트 사례를 담은 Anthropic 공식 글.
+- [Effective harnesses for long-running agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents) —
+  장시간 실행 에이전트의 하네스 설계(컨텍스트·상태 관리) 공식 가이드.
+- [anthropics/claude-agent-sdk-demos](https://github.com/anthropics/claude-agent-sdk-demos) —
+  이메일 어시스턴트·리서치 에이전트 등 SDK로 만든 실동작 예제 모음(공식 저장소).
+- [Claude Agent SDK Full Workshop (YouTube)](https://www.youtube.com/watch?v=TqC1qOfiVcQ) —
+  Anthropic 소속 발표자가 진행한 실습 중심 SDK 워크숍 영상(2026-01).
 
 ## 참고 자료
 
