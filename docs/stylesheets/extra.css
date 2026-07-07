@@ -1,39 +1,109 @@
 /* ============================================================
-   레이아웃: 본문 폭 확장
-   MkDocs Material 은 기본적으로 콘텐츠 그리드를 61rem(~976px)로
-   제한한다. 와이드 모니터(2560px 등)에서 양옆 여백이 과도해지므로
-   제한을 해제해 본문이 화면을 최대한 활용하게 한다.
-   (사이드바 2개는 각각 12.1rem 고정 — 나머지 전부가 본문이 된다)
+   Agent A to Z — 커스텀 스타일
+   목표: 차분하게 모던 + 한국어 가독성. 라이트/다크 모두 지원
+   (Material 테마 CSS 변수를 활용해 다크 모드 자동 대응)
+   ============================================================ */
+
+/* ---------- 폰트: Pretendard (한국어 최적화 모던 산세리프) ---------- */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");
+
+:root {
+  --md-text-font: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Helvetica Neue", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  /* 포인트 컬러 (라이트) */
+  --aaz-accent: #4f46e5;
+  --aaz-accent-soft: rgba(79, 70, 229, 0.08);
+  --aaz-accent-softer: rgba(79, 70, 229, 0.04);
+  --aaz-border: rgba(0, 0, 0, 0.07);
+  --aaz-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+[data-md-color-scheme="slate"] {
+  --aaz-accent: #818cf8;
+  --aaz-accent-soft: rgba(129, 140, 248, 0.12);
+  --aaz-accent-softer: rgba(129, 140, 248, 0.06);
+  --aaz-border: rgba(255, 255, 255, 0.09);
+  --aaz-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+/* ============================================================
+   레이아웃: 본문 폭 전체 활용 (기존 유지)
    ============================================================ */
 .md-grid {
   max-width: 100%;
 }
 
-/* 본문 좌우에 최소한의 숨 쉴 공간만 남긴다 */
 .md-main__inner {
   margin-left: 0.8rem;
   margin-right: 0.8rem;
 }
 
 /* ============================================================
-   한국어 타이포그래피: 줄바꿈 품질
-   word-break: keep-all — 한글이 어절(단어) 중간에서 끊기지 않고
-   공백 단위로만 줄바꿈된다. 표 셀에서 특히 효과가 크다.
-   overflow-wrap: break-word — 긴 URL/식별자는 넘칠 때만 강제 줄바꿈.
+   한국어 타이포그래피
    ============================================================ */
 .md-typeset {
   word-break: keep-all;
   overflow-wrap: break-word;
+  font-size: 0.78rem;
+  line-height: 1.75;
+  letter-spacing: -0.01em; /* 한글은 자간을 살짝 좁히면 단정해짐 */
+}
+
+/* ---------- 제목: 위계가 한눈에 보이도록 ---------- */
+.md-typeset h1 {
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--md-default-fg-color);
+  padding-bottom: 0.4em;
+  border-bottom: 1px solid var(--aaz-border);
+}
+
+.md-typeset h2 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-top: 2.2em;
+  padding-left: 0.55em;
+  border-left: 4px solid var(--aaz-accent); /* 왼쪽 포인트 바 */
+  border-radius: 2px;
+}
+
+.md-typeset h3 {
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+/* ---------- 링크: 은은한 밑줄 ---------- */
+.md-typeset a {
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  transition: color 0.15s ease;
 }
 
 /* ============================================================
-   표: 어색한 줄바꿈 방지
-   - 셀 안의 인라인 코드(패키지명·API명·모델 ID)는 줄바꿈 금지
-   - 헤더 셀도 줄바꿈 금지 (열 제목이 두 줄로 갈라지는 것 방지)
-   - 표 자체가 화면보다 넓어지면 Material 기본 가로 스크롤 사용
+   표: 카드형 — 둥근 모서리·줄무늬·호버 하이라이트
    ============================================================ */
+.md-typeset table:not([class]) {
+  font-size: 0.72rem;
+  border: 1px solid var(--aaz-border);
+  border-radius: 10px;
+  overflow: hidden; /* 둥근 모서리 밖으로 셀 배경이 새지 않게 */
+  box-shadow: var(--aaz-shadow);
+}
+
 .md-typeset table:not([class]) th {
   white-space: nowrap;
+  background: var(--aaz-accent-soft);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.md-typeset table:not([class]) tbody tr:nth-child(even) {
+  background: var(--aaz-accent-softer); /* 줄무늬 */
+}
+
+.md-typeset table:not([class]) tbody tr:hover {
+  background: var(--aaz-accent-soft);
+  transition: background 0.12s ease;
 }
 
 .md-typeset table:not([class]) td code,
@@ -41,14 +111,103 @@
   white-space: nowrap;
 }
 
-/* 넓어진 본문에 맞춰 표 글자를 살짝 키움 (기본 0.64rem) */
-.md-typeset table:not([class]) {
-  font-size: 0.72rem;
-}
-
 /* ============================================================
-   코드 블록: 넓어진 폭 활용 — 불필요한 접힘 없이 그대로 표시
+   코드: 둥근 블록 + 인라인 코드 강조
    ============================================================ */
 .md-typeset pre > code {
   overflow-x: auto;
+  border-radius: 10px;
+  line-height: 1.6;
+}
+
+.md-typeset .highlight {
+  border-radius: 10px;
+  box-shadow: var(--aaz-shadow);
+}
+
+/* 인라인 코드: 배경 칩 형태 */
+.md-typeset code:not(pre code) {
+  border-radius: 5px;
+  padding: 0.1em 0.4em;
+  background: var(--aaz-accent-softer);
+  border: 1px solid var(--aaz-border);
+  font-size: 0.85em;
+}
+
+/* ============================================================
+   Admonition (note/tip/warning...): 부드러운 카드
+   ============================================================ */
+.md-typeset .admonition,
+.md-typeset details {
+  border-radius: 10px;
+  border-width: 0 0 0 4px; /* 왼쪽 라인만 남기고 정리 */
+  box-shadow: var(--aaz-shadow);
+  font-size: 0.74rem;
+}
+
+.md-typeset .admonition-title,
+.md-typeset summary {
+  border-radius: 0; /* 타이틀 배경이 카드 모서리 안에서 자연스럽게 */
+  font-weight: 700;
+}
+
+/* ============================================================
+   내비게이션: 현재 항목 필(pill) 강조 + 호버
+   ============================================================ */
+.md-nav__link {
+  border-radius: 6px;
+  padding: 0.15em 0.4em;
+  transition: background 0.12s ease;
+}
+
+.md-nav__link:hover {
+  background: var(--aaz-accent-softer);
+}
+
+.md-nav__link--active {
+  background: var(--aaz-accent-soft);
+  font-weight: 700;
+}
+
+/* 좌측 섹션 제목(Phase A · 기반 ...) 또렷하게 */
+.md-nav__item--section > .md-nav__link {
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--md-default-fg-color);
+}
+
+/* ============================================================
+   기타 다듬기
+   ============================================================ */
+/* 인용문 */
+.md-typeset blockquote {
+  border-left: 3px solid var(--aaz-accent);
+  border-radius: 0 8px 8px 0;
+  background: var(--aaz-accent-softer);
+}
+
+/* 구분선 */
+.md-typeset hr {
+  border-bottom: 1px solid var(--aaz-border);
+}
+
+/* 스크롤바: 얇고 은은하게 (웹킷 계열) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--aaz-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--aaz-accent);
+}
+
+/* 맨 위로 버튼·검색창 둥글게 */
+.md-top,
+.md-search__form {
+  border-radius: 10px;
 }
