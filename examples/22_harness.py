@@ -9,10 +9,10 @@
 세 역할은 **서로 다른 프롬프트/역할**을 갖는다. 특히 평가자는 생성자와
 분리되어야 자기채점 편향(후한 점수)을 피할 수 있다.
 
-또한 **핸드오프 파일**(scratchpad/progress.md)에 각 반복의 진행 상황을
-기록한다. 실전에서는 긴 작업 시 컨텍스트를 완전히 리셋하고 이 압축 파일만
-읽혀 새 세션을 시작한다(compaction만으로는 부족). 여기서는 그 패턴의
-축소판으로, 매 반복마다 진행 파일을 갱신한다.
+또한 **핸드오프 파일**(examples/_scratch_progress.md — 환경변수 HARNESS_PROGRESS 로
+변경 가능)에 각 반복의 진행 상황을 기록한다. 실전에서는 긴 작업 시 컨텍스트를
+완전히 리셋하고 이 압축 파일만 읽혀 새 세션을 시작한다(compaction만으로는 부족).
+여기서는 그 패턴의 축소판으로, 매 반복마다 진행 파일을 갱신한다.
 
 루프: 평가가 통과(threshold 이상)하거나 최대 반복 횟수에 도달하면 종료.
 
@@ -21,6 +21,28 @@
   pip install anthropic python-dotenv
   # .env 에 ANTHROPIC_API_KEY=sk-ant-...
   python examples/22_harness.py
+
+[기대 출력 예시] (결과물·점수는 실행마다 다르며, 보통 반복 1~2회 안에 통과)
+  ======================================================================
+  계획 단계
+  ======================================================================
+  1. 캐싱의 핵심 원리를 한 문장으로 정의 ... (판정 기준 포함 계획)
+
+  ======================================================================
+  반복 1: 생성 → 평가
+  ======================================================================
+  [결과물]
+  프롬프트 캐싱은 자주 쓰는 서두를 미리 계산해 두는 것으로, 카페의 ...
+  [평가] 점수 4/5 — 비유와 무효화 조건을 모두 충족했다.
+
+  통과 ✅ (임계값 4점) — 반복 1에서 종료
+  진행/핸드오프 파일: <프로젝트 경로>/examples/_scratch_progress.md
+
+[흔한 에러]
+  - authentication_error (401): ANTHROPIC_API_KEY 미설정 → .env 파일 확인
+  - ModuleNotFoundError: No module named 'anthropic' → pip install anthropic python-dotenv
+  - PermissionError(_scratch_progress.md 쓰기 실패): 폴더 쓰기 권한 없음
+    → 환경변수 HARNESS_PROGRESS 로 쓰기 가능한 경로 지정
 """
 
 from __future__ import annotations
@@ -34,12 +56,11 @@ import anthropic
 
 load_dotenv()
 
-MODEL = "claude-opus-4-8"
-# MODEL = "claude-haiku-4-5"  # 저렴/빠름
+MODEL = "claude-opus-4-8"  # 비용 절감: "claude-haiku-4-5" 로 변경
 
 client = anthropic.Anthropic()
 
-# 진행/핸드오프 파일 경로 (프로젝트를 더럽히지 않게 scratchpad 아래에 둔다)
+# 진행/핸드오프 파일 경로 (기본: 이 파일 옆 examples/_scratch_progress.md, HARNESS_PROGRESS 로 변경 가능)
 PROGRESS_PATH = Path(
     os.environ.get("HARNESS_PROGRESS", Path(__file__).parent / "_scratch_progress.md")
 )

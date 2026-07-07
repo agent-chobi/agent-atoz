@@ -16,6 +16,22 @@ LCEL(LangChain Expression Language)로 프롬프트·모델·파서를 파이프
 
 실행:
     python examples/05_langchain_lcel.py
+
+[기대 출력 예시] (모델 출력은 실행마다 다르며 대략 이런 형태)
+    === 1) .invoke — 단건 실행 ===
+    합의는 노드 장애·메시지 지연이 겹치면 ... (세 문장 이내 답변)
+
+    === 2) .stream — 토큰 스트리밍 ===
+    TCP 3-way handshake는 SYN → SYN-ACK → ACK ... (토큰 단위 출력)
+
+    === 3) .bind_tools — 도구 바인딩 ===
+    모델이 호출한 도구: get_weather({'city': '서울'})
+    도구 실행 결과: 서울: 맑음, 24도
+
+[흔한 에러]
+    - ImportError: No module named 'langchain_anthropic' → pip install -r requirements.txt 재실행
+    - authentication_error (401): ANTHROPIC_API_KEY 미설정 → .env 파일 확인
+    - 3)에서 "도구 호출 없이 응답": 모델이 도구가 불필요하다고 판단한 경우 — 오류 아님
 """
 
 from dotenv import load_dotenv
@@ -27,8 +43,7 @@ from langchain_core.tools import tool
 
 load_dotenv()  # .env 에서 ANTHROPIC_API_KEY 로드
 
-# 비용을 아끼려면 "claude-haiku-4-5" 로 바꾸세요. ("claude-sonnet-5" 도 가능)
-MODEL = "claude-opus-4-8"
+MODEL = "claude-opus-4-8"  # 비용 절감: "claude-haiku-4-5" 로 변경
 
 
 def build_chain():

@@ -42,7 +42,18 @@
 | 15 | [평가 & 비용](15-evaluation-cost.md) | LLM-as-judge, 에이전트 평가, 토큰 관리 |
 | 16 | [셀프호스팅 런타임 (OpenClaw & Hermes)](16-self-hosted-runtimes.md) | Gateway 오케스트레이션, Skills 자동생성 |
 | 17 | [하네스 엔지니어링 (캡스톤)](17-harness-engineering.md) | 계획/생성/평가 분리, 컨텍스트 리셋·핸드오프 |
+| **F** | **심화 & 실전** | |
+| 18 | [구조화된 출력](18-structured-output.md) | JSON Schema, Pydantic, strict tool use |
+| 19 | [워크플로우 패턴](19-workflow-patterns.md) | Chaining·Routing·Parallelization·Evaluator-Optimizer, Workflow vs Agent |
+| 20 | [LangGraph 심화](20-langgraph-advanced.md) | 서브그래프, 스트리밍, Functional API, Durable Execution |
+| 21 | [RAG & Agentic RAG](21-rag-agentic-rag.md) | 검색 파이프라인, 검색을 도구로 쥔 에이전트 |
+| 22 | [통합 프로젝트 (단계별)](22-capstone-project.md) | 미니 리서치 팀을 Step 0→5로 직접 구축 |
 | — | [부록 A · SDK 비교 매트릭스](appendix-sdk-matrix.md) | 프레임워크 장단점 한눈에 |
+
+!!! info "읽기 순서 팁"
+    Phase F는 심화 모듈입니다 — 18·19장은 02장 직후에, 20장은 04장 직후에,
+    21장은 Phase D와 함께 읽어도 좋습니다. 22장 통합 프로젝트는 모든 Phase를 마친 뒤
+    처음부터 끝까지 따라 만드는 캡스톤입니다.
 
 ## 빠른 시작
 

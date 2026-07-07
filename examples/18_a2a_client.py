@@ -18,6 +18,21 @@
 
 주의: a2a-sdk 클라이언트 API 는 버전에 민감합니다. 아래는 널리 쓰이는 0.2.x/0.3.x 패턴이며,
       1.0 계열에서는 create_client(ClientConfig(...)) 방식으로 바뀔 수 있습니다. 설치 버전 대조 필요.
+
+[기대 출력 예시] (응답 JSON 구조는 버전마다 조금 다르며 대략 이런 형태)
+    === 발견한 Agent Card ===
+    이름: Greeter Agent
+    설명: A2A 데모용 인사 에이전트
+    스킬: ['인사하기']
+
+    === 서버 응답 ===
+    {'id': '...', 'jsonrpc': '2.0', 'result': {'kind': 'message', 'parts':
+     [{'kind': 'text', 'text': "안녕하세요! A2A 에이전트가 받았습니다: '안녕, A2A 서버!'"}], ...}}
+
+[흔한 에러]
+    - httpx.ConnectError: Connection refused → 17_a2a_server.py 를 먼저 별도 터미널에서 실행
+    - ImportError: No module named 'a2a' → pip install -r requirements.txt (a2a-sdk, httpx)
+    - 404 (agent-card.json): 서버가 다른 포트/경로에 떠 있음 → BASE_URL 과 서버 포트 일치 확인
 """
 
 import asyncio

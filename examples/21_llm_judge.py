@@ -22,6 +22,26 @@ judge는 원래 질문·정답 기준(rubric)을 받되, "생성자가 아니라
   # 2) .env 에 ANTHROPIC_API_KEY=sk-ant-... 설정
   # 3) 실행
   python examples/21_llm_judge.py
+
+[기대 출력 예시] (답변·점수는 실행마다 다르며 대략 이런 형태)
+  ======================================================================
+  1) 생성 단계
+  ======================================================================
+  프롬프트 캐싱은 반복되는 프리픽스(시스템 프롬프트 등)를 서버에 저장해 ...
+
+  ======================================================================
+  2) 평가 단계 (별도 judge 프롬프트)
+  ======================================================================
+  점수: 5 / 5
+  근거: 캐시 재사용으로 입력 토큰 비용이 줄어드는 원리를 정확히 설명했다. ...
+  세부: {'accuracy': True, 'relevance': True, 'conciseness': True}
+
+  판정: PASS ✅ (임계값 4점)
+
+[흔한 에러]
+  - authentication_error (401): ANTHROPIC_API_KEY 미설정 → .env 파일 확인
+  - ModuleNotFoundError: No module named 'anthropic' → pip install anthropic python-dotenv
+  - json.JSONDecodeError: output_config 미지원 구형 SDK → pip install -U anthropic
 """
 
 from __future__ import annotations
@@ -35,9 +55,7 @@ import anthropic
 # .env 에서 ANTHROPIC_API_KEY 로드
 load_dotenv()
 
-# 기본은 가장 강력한 Opus. 비용을 아끼려면 아래를 claude-haiku-4-5 로 교체.
-MODEL = "claude-opus-4-8"
-# MODEL = "claude-haiku-4-5"  # 저렴/빠름 (실습·반복 채점에 적합)
+MODEL = "claude-opus-4-8"  # 비용 절감: "claude-haiku-4-5" 로 변경
 
 client = anthropic.Anthropic()
 

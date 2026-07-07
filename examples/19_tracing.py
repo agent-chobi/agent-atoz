@@ -1,5 +1,5 @@
 """
-19_tracing.py — 에이전트 실행 트레이싱 (LangSmith / Langfuse / 자체 폴백)
+19_tracing.py — 에이전트 실행 트레이싱 (LangSmith / 콘솔 자체 폴백)
 
 [문서] docs/13-debugging-observability.md
 
@@ -7,10 +7,9 @@
 이 예제는 간단한 도구 사용 에이전트 루프를 만들고, 각 단계(프롬프트/도구선택/도구입출력)를
 트레이스 span으로 남깁니다.
 
-세 가지 방식을 방어적으로 시도합니다.
-  1) LangSmith  — 환경변수만 설정되어 있으면 `@traceable`로 자동 기록.
-  2) Langfuse   — 설치+설정 시 span 기록(선택).
-  3) 자체 폴백  — 관측 SDK가 없어도 콘솔에 span 트리를 출력하여 에이전트는 항상 동작.
+두 가지 방식을 방어적으로 시도합니다.
+  1) LangSmith  — 환경변수(LANGSMITH_TRACING=true 등)가 설정되어 있으면 `@traceable`로 자동 기록.
+  2) 자체 폴백  — LangSmith 미설치/미설정이어도 콘솔에 span 트리를 출력하여 에이전트는 항상 동작.
 
 ────────────────────────────────────────────────────────────────────
 [실행법]
@@ -25,6 +24,25 @@
 
   트레이싱을 설정하지 않아도 콘솔에 자체 span 트리가 출력됩니다.
 ────────────────────────────────────────────────────────────────────
+
+[기대 출력 예시] (모델 문구는 실행마다 다르며 대략 이런 형태)
+  트레이싱 상태: LangSmith 미설치 → 자체 폴백
+  ▶ agent_loop
+      question: 12 곱하기 (3 더하기 4)는 얼마야? 계산기를 써서 알려줘.
+    ▶ llm_call (turn 0)
+      └ OK llm_call (turn 0) (2100ms)
+        stop_reason = tool_use
+    ▶ tool: calculator
+        output = 84
+      └ OK tool: calculator (0ms)
+    └ OK agent_loop (4300ms)
+  답변: 12 × (3 + 4) = 84 입니다.
+
+[흔한 에러]
+  - authentication_error (401): ANTHROPIC_API_KEY 미설정 → .env 파일 확인
+  - ModuleNotFoundError: No module named 'anthropic' → pip install anthropic python-dotenv
+  - LangSmith 로 전송 안 됨: LANGSMITH_TRACING=true 미설정 또는 langsmith 미설치
+    → pip install langsmith 후 환경변수 설정 (미설정이어도 콘솔 폴백은 동작)
 """
 
 from __future__ import annotations
@@ -44,8 +62,7 @@ except Exception:
 
 load_dotenv()  # .env 에서 API 키 / 트레이싱 환경변수 로드
 
-# 기본 모델 (비용 절감: "claude-haiku-4-5" 로 교체)
-MODEL = "claude-opus-4-8"
+MODEL = "claude-opus-4-8"  # 비용 절감: "claude-haiku-4-5" 로 변경
 
 # ── 관측 SDK 방어적 로딩 ────────────────────────────────────────────
 # LangSmith: 환경변수 LANGSMITH_TRACING=true 이고 패키지가 설치돼 있을 때만 활성화.

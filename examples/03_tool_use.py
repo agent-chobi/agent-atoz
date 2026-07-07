@@ -14,6 +14,19 @@
   pip install anthropic python-dotenv
   # .env 에 ANTHROPIC_API_KEY=sk-ant-... 설정
   python examples/03_tool_use.py
+
+[기대 출력 예시] (출력은 실행마다 다르며 대략 이런 형태)
+  stop_reason: tool_use
+    -> 도구 호출: get_weather({'city': '서울'})
+    -> 도구 호출: calculator({'expression': '(3+5)*2'})
+
+  === 최종 답변 ===
+  서울은 현재 맑고 24도입니다. (3+5)*2 = 16 입니다.
+
+[흔한 에러]
+  - authentication_error (401): ANTHROPIC_API_KEY 미설정 → .env 파일 확인
+  - invalid_request_error (400): tool_result 의 tool_use_id 불일치 → block.id 를 그대로 사용
+  - KeyError: 모델이 정의에 없는 도구를 호출(드묾) → TOOL_FUNCS 매핑과 도구 이름 확인
 """
 
 import anthropic
@@ -21,7 +34,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-MODEL = "claude-opus-4-8"  # 비용 절감시 claude-haiku-4-5
+MODEL = "claude-opus-4-8"  # 비용 절감: "claude-haiku-4-5" 로 변경
 
 # --- 도구 정의 (JSON Schema) -------------------------------------------------
 TOOLS = [

@@ -10,6 +10,20 @@
   pip install anthropic python-dotenv
   # .env 에 ANTHROPIC_API_KEY=sk-ant-... 설정
   python examples/01_basic_message.py
+
+[기대 출력 예시] (모델 출력은 실행마다 다르며 대략 이런 형태)
+  === 응답 블록 순회 ===
+  리스트 컴프리헨션은 반복문과 조건을 한 줄로 압축해 새 리스트를 만드는 문법입니다.
+
+  === 메타 ===
+  stop_reason: end_turn
+  입력 토큰: 58
+  출력 토큰: 47
+
+[흔한 에러]
+  - authentication_error (401): ANTHROPIC_API_KEY 미설정/오타 → .env 파일 확인
+  - ModuleNotFoundError: No module named 'anthropic' → pip install anthropic python-dotenv
+  - rate_limit_error (429): 요청 과다 → 잠시 후 재시도 (SDK가 기본 2회 자동 재시도)
 """
 
 import anthropic
@@ -17,7 +31,7 @@ from dotenv import load_dotenv
 
 load_dotenv()  # .env 의 ANTHROPIC_API_KEY 를 환경변수로 로드
 
-MODEL = "claude-opus-4-8"  # 비용 절감시 claude-haiku-4-5
+MODEL = "claude-opus-4-8"  # 비용 절감: "claude-haiku-4-5" 로 변경
 
 
 def main() -> None:

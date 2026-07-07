@@ -13,6 +13,20 @@
   pip install anthropic python-dotenv
   # .env 에 ANTHROPIC_API_KEY=sk-ant-... 설정
   python examples/02_streaming.py
+
+[기대 출력 예시] (이야기 내용은 실행마다 다르며 대략 이런 형태)
+  === 스트리밍 출력 ===
+  탐사선 아리랑호는 목성의 위성 유로파에 착륙했다. ... (토큰 단위로 실시간 출력)
+
+  === 최종 usage ===
+  stop_reason: end_turn
+  입력 토큰: 35
+  출력 토큰: 180
+
+[흔한 에러]
+  - authentication_error (401): ANTHROPIC_API_KEY 미설정 → .env 파일 확인
+  - ModuleNotFoundError: No module named 'anthropic' → pip install anthropic python-dotenv
+  - APIConnectionError: 네트워크 끊김(스트림 중단) → 재시도. 부분 출력은 버릴 것
 """
 
 import anthropic
@@ -20,7 +34,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-MODEL = "claude-opus-4-8"  # 비용 절감시 claude-haiku-4-5
+MODEL = "claude-opus-4-8"  # 비용 절감: "claude-haiku-4-5" 로 변경
 
 
 def main() -> None:
@@ -29,7 +43,7 @@ def main() -> None:
     print("=== 스트리밍 출력 ===")
     with client.messages.stream(
         model=MODEL,
-        max_tokens=64000,  # 스트리밍이므로 넉넉히 줘도 타임아웃 걱정 없음
+        max_tokens=64000,  # max_tokens는 상한일 뿐 과금은 실제 생성분만 — 스트리밍에선 크게 줘도 무해함을 시연
         messages=[
             {"role": "user", "content": "우주 탐사를 소재로 한 짧은 이야기를 5문장으로 써줘."},
         ],

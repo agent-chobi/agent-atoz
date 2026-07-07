@@ -20,6 +20,19 @@ A2A(Agent2Agent) 는 에이전트끼리 통신하는 표준입니다(Google → 
 
 주의: a2a-sdk 는 2026년 시그니처가 자주 바뀝니다(0.3 → 1.0 에서 AgentCard 필드·클라이언트
       생성 방식이 변경됨). 아래는 널리 쓰이는 0.2.x/0.3.x 안정 패턴입니다. 설치 버전 대조 필요.
+
+[기대 출력 예시] (서버가 뜬 뒤 종료되지 않고 대기하면 성공)
+    A2A 서버 시작: http://localhost:9999
+    Agent Card: http://localhost:9999/.well-known/agent-card.json
+    INFO:     Started server process [12345]
+    INFO:     Uvicorn running on http://0.0.0.0:9999 (Press CTRL+C to quit)
+    (이후 18_a2a_client.py 가 붙으면 200 OK 액세스 로그가 찍힌다)
+
+[흔한 에러]
+    - ImportError: No module named 'a2a' → pip install -r requirements.txt (a2a-sdk, uvicorn)
+    - OSError: [WinError 10048] / address already in use: 9999 포트 사용 중
+      → 기존 서버 종료 또는 포트 변경(클라이언트 BASE_URL 도 함께 변경)
+    - pydantic ValidationError(AgentCard 필드): a2a-sdk 버전 불일치 → 설치 버전 문서 대조
 """
 
 import uvicorn

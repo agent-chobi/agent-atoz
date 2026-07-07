@@ -19,6 +19,24 @@
   pip install -r requirements.txt          # langgraph (langmem 은 선택)
   copy .env.example .env                    # (langmem 데모에만 ANTHROPIC_API_KEY 필요)
   python examples/10_long_term_memory.py
+
+[기대 출력 예시] (1)은 결정적, (2)의 문구는 실행마다 다름)
+  === 1) 순수 스토어: put → 다른 thread 에서 get/search ===
+  저장 완료: 식성, 언어 선호
+
+  get('diet') → 채식주의자, 견과류 알레르기
+
+  search(namespace) 전체 기억:
+    - [diet] 채식주의자, 견과류 알레르기
+    - [lang] 한국어로 존댓말 선호
+
+  === 2) langmem: 에이전트가 스스로 기억 저장/검색 ===
+  [에이전트] 파이썬을 좋아하고 자바는 싫어한다고 하셨어요.
+
+[흔한 에러]
+  - ImportError: No module named 'langgraph' → pip install -r requirements.txt 재실행
+  - "(2) langmem 데모 건너뜀" 출력: langmem 미설치 또는 키 없음 — 오류 아님(선택 데모)
+  - authentication_error (401): ANTHROPIC_API_KEY 값이 잘못됨 → .env 파일 확인
 """
 
 import os
@@ -28,8 +46,8 @@ from langgraph.store.memory import InMemoryStore
 
 load_dotenv()
 
-# langmem 데모(선택)에서만 사용. 비용 절감:  MODEL = "claude-haiku-4-5"
-MODEL = "claude-opus-4-8"
+# langmem 데모(선택)에서만 사용.
+MODEL = "claude-opus-4-8"  # 비용 절감: "claude-haiku-4-5" 로 변경
 
 USER_ID = "alex"
 
@@ -71,7 +89,8 @@ def demo_langmem_agent() -> None:
 
     print("\n=== 2) langmem: 에이전트가 스스로 기억 저장/검색 ===")
     store = InMemoryStore()
-    model = ChatAnthropic(model=MODEL, temperature=0)
+    # 최신 Opus는 temperature 미지원(400) — 결정성이 필요하면 프롬프트로 제어
+    model = ChatAnthropic(model=MODEL)
 
     tools = [
         # {user_id} 동적 네임스페이스 → 사용자별로 기억이 격리된다

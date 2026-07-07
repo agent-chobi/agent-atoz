@@ -17,6 +17,22 @@
   python examples/09_short_term_memory.py
 
   # 실행 후 생성되는 checkpoints.sqlite 를 지우면 기억이 초기화된다.
+
+[기대 출력 예시] (모델 문구는 실행마다 다르며 대략 이런 형태)
+  === 같은 thread 에서 멀티턴 ===
+  [사용자] 내 이름이 뭐라고 했지?
+  [에이전트] 밥이라고 하셨어요.
+  [사용자] 내가 좋아하는 색은?
+  [에이전트] 파랑을 좋아하신다고 하셨죠.
+
+  === 다른 thread (기억 없음) ===
+  [에이전트] 죄송하지만 이전 대화 기록이 없어 이름을 알 수 없어요.
+
+[흔한 에러]
+  - ImportError: No module named 'langgraph.checkpoint.sqlite' → pip install -r requirements.txt
+    (langgraph-checkpoint-sqlite 패키지 필요)
+  - SystemExit "ANTHROPIC_API_KEY 가 설정되지 않았습니다" → .env 파일 확인
+  - 이전 실행의 기억이 섞임: checkpoints.sqlite 가 남아 있음 → 파일 삭제 후 재실행
 """
 
 import os
@@ -29,9 +45,7 @@ from langgraph.prebuilt import create_react_agent
 
 load_dotenv()
 
-# 기본은 가장 강력한 Opus. 비용을 아끼려면 아래 한 줄로 교체:
-# MODEL = "claude-haiku-4-5"   # 빠르고 저렴
-MODEL = "claude-opus-4-8"
+MODEL = "claude-opus-4-8"  # 비용 절감: "claude-haiku-4-5" 로 변경
 
 
 @tool
@@ -51,7 +65,8 @@ def main() -> None:
     if not os.getenv("ANTHROPIC_API_KEY"):
         raise SystemExit("ANTHROPIC_API_KEY 가 설정되지 않았습니다. .env 를 확인하세요.")
 
-    model = ChatAnthropic(model=MODEL, temperature=0)
+    # 최신 Opus는 temperature 미지원(400) — 결정성이 필요하면 프롬프트로 제어
+    model = ChatAnthropic(model=MODEL)
 
     # SqliteSaver 는 컨텍스트 매니저로 열어 파일 커넥션을 관리한다.
     # ":memory:" 를 주면 프로세스 메모리에만(InMemorySaver 유사) 저장된다.

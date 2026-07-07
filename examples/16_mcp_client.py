@@ -15,6 +15,23 @@
 
 참고: 방식 (B) 는 ANTHROPIC_API_KEY 가 필요합니다(에이전트가 LLM 을 호출).
       키가 없으면 (A) 만 실행됩니다.
+
+[기대 출력 예시] ((A)는 결정적, (B)의 문구는 실행마다 다름)
+    === (A) 서버가 노출한 도구 ===
+    - add: 두 정수를 더한다. ...
+    - get_weather: 도시의 날씨를 반환한다(데모용 고정 응답). ...
+
+    add(3, 5) => 8
+    get_weather('Seoul') => 맑음, 26도
+
+    === (B) LangGraph 에이전트가 MCP 도구를 자율 호출 ===
+    서울은 맑고 26도입니다. 그리고 3 더하기 5는 8입니다.
+
+[흔한 에러]
+    - FileNotFoundError / 서버 기동 실패: 15_mcp_server.py 경로 문제 → 이 파일과 같은
+      examples/ 폴더에 15_mcp_server.py 가 있어야 한다 (SERVER_SCRIPT 가 자동 계산)
+    - ImportError: No module named 'langchain_mcp_adapters' → pip install -r requirements.txt
+    - "[건너뜀] ANTHROPIC_API_KEY 가 없어..." 출력: (B) 생략 — 키를 .env 에 설정하면 실행됨
 """
 
 import asyncio
@@ -25,8 +42,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-MODEL = "claude-opus-4-8"
-# MODEL = "claude-haiku-4-5"
+MODEL = "claude-opus-4-8"  # 비용 절감: "claude-haiku-4-5" 로 변경
 
 # 이 클라이언트가 띄울 서버 스크립트 (같은 폴더의 15_mcp_server.py)
 SERVER_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "15_mcp_server.py")
@@ -75,7 +91,8 @@ async def run_langgraph_agent() -> None:
     # MCP 도구를 LangChain 도구 객체로 변환 (비동기)
     tools = await client.get_tools()
 
-    agent = create_react_agent(ChatAnthropic(model=MODEL, temperature=0), tools)
+    # 최신 Opus는 temperature 미지원(400) — 결정성이 필요하면 프롬프트로 제어
+    agent = create_react_agent(ChatAnthropic(model=MODEL), tools)
 
     print("\n=== (B) LangGraph 에이전트가 MCP 도구를 자율 호출 ===")
     response = await agent.ainvoke(

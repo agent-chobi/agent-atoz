@@ -13,6 +13,18 @@
   pip install anthropic python-dotenv
   # .env 에 ANTHROPIC_API_KEY=sk-ant-... 설정
   python examples/04_agent_loop.py
+
+[기대 출력 예시] (턴 수와 문구는 실행마다 다르며 대략 이런 형태)
+  [턴 0] get_temperature({'city': '부산'})
+  [턴 1] celsius_to_fahrenheit({'celsius': 21})
+
+  === 최종 답변 ===
+  부산의 현재 기온은 21도(섭씨)이고, 화씨로는 69.8도입니다.
+
+[흔한 에러]
+  - authentication_error (401): ANTHROPIC_API_KEY 미설정 → .env 파일 확인
+  - ModuleNotFoundError: No module named 'anthropic' → pip install anthropic python-dotenv
+  - "[최대 턴 수 초과]" 출력: 모델이 루프를 못 끝냄 → max_turns 조정 또는 프롬프트 명확화
 """
 
 import anthropic
@@ -20,7 +32,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-MODEL = "claude-opus-4-8"  # 비용 절감시 claude-haiku-4-5
+MODEL = "claude-opus-4-8"  # 비용 절감: "claude-haiku-4-5" 로 변경
 
 TOOLS = [
     {

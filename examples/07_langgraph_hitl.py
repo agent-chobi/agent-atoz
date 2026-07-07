@@ -14,6 +14,19 @@
 
 실행:
     python examples/07_langgraph_hitl.py
+
+[기대 출력 예시] (LLM 미호출이라 아래와 거의 동일하게 출력되면 성공)
+    === HITL 승인 게이트 데모 ===
+    [tx-approve] 일시정지, 승인 요청: {'question': '이 송금을 승인하시겠습니까?', 'amount': 10000}
+    [tx-approve] resume='yes' -> 10000원 송금 완료 ✅
+    [tx-reject] 일시정지, 승인 요청: {'question': '이 송금을 승인하시겠습니까?', 'amount': 10000}
+    [tx-reject] resume='no' -> 송금이 거부되었습니다 ❌
+    ※ 승인(yes) 케이스는 ✅, 거부(no) 케이스는 ❌ 가 나와야 정상.
+
+[흔한 에러]
+    - ImportError: No module named 'langgraph' → pip install -r requirements.txt 재실행
+    - KeyError: '__interrupt__': 체크포인터 없이 compile 함 → compile(checkpointer=...) 필수
+    - 재개가 처음부터 다시 실행됨: resume 시 thread_id 가 다름 → 같은 config 로 invoke
 """
 
 from typing import TypedDict
@@ -26,7 +39,7 @@ from langgraph.types import Command, interrupt
 
 load_dotenv()
 
-MODEL = "claude-opus-4-8"  # 이 예제는 LLM 호출 없이 그래프 제어 흐름만 시연한다
+MODEL = "claude-opus-4-8"  # 비용 절감: "claude-haiku-4-5" 로 변경 — 규칙상 명시(이 예제는 LLM 미호출, 20번과 동일 패턴)
 
 
 class State(TypedDict):

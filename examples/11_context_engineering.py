@@ -16,6 +16,23 @@
   pip install -r requirements.txt          # langchain-core, langchain-anthropic
   copy .env.example .env                    # (요약 데모에만 ANTHROPIC_API_KEY 필요)
   python examples/11_context_engineering.py
+
+[기대 출력 예시] ((A)는 결정적, (B)의 요약문은 실행마다 다름)
+  === (A) trim_messages — 최근 토큰만 보존 ===
+  원본 메시지 수: 41
+  트림 후 메시지 수: 9
+  남은 메시지 미리보기:
+    - SystemMessage: 너는 친절한 여행 도우미다.
+    - HumanMessage: 도쿄 여행 팁 하나만 알려줘 (질문 18) ...
+
+  === (B) 요약 — 오래된 대화를 SystemMessage 로 압축 ===
+  원본 41개 → 압축 후 6개
+  요약 내용: 사용자가 파리·로마·도쿄·서울·뉴욕 여행 팁을 반복해 물었고 ...
+
+[흔한 에러]
+  - ImportError: No module named 'langchain_core' → pip install -r requirements.txt 재실행
+  - "(B) 요약 데모 건너뜀" 출력: langchain-anthropic 미설치 또는 키 없음 — 오류 아님
+  - authentication_error (401): ANTHROPIC_API_KEY 값이 잘못됨 → .env 파일 확인
 """
 
 import os
@@ -30,8 +47,7 @@ from langchain_core.messages import (
 
 load_dotenv()
 
-# 비용 절감:  MODEL = "claude-haiku-4-5"
-MODEL = "claude-opus-4-8"
+MODEL = "claude-opus-4-8"  # 비용 절감: "claude-haiku-4-5" 로 변경
 
 
 def build_long_history() -> list:
@@ -78,7 +94,8 @@ def demo_summarize(history: list) -> None:
         return
 
     print("\n=== (B) 요약 — 오래된 대화를 SystemMessage 로 압축 ===")
-    model = ChatAnthropic(model=MODEL, temperature=0)
+    # 최신 Opus는 temperature 미지원(400) — 결정성이 필요하면 프롬프트로 제어
+    model = ChatAnthropic(model=MODEL)
 
     keep_recent = 4                      # 최근 4개 메시지는 원문 유지
     old, recent = history[1:-keep_recent], history[-keep_recent:]

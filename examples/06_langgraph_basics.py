@@ -17,6 +17,18 @@
 
 실행:
     python examples/06_langgraph_basics.py
+
+[기대 출력 예시] (문구는 실행마다 다르며 대략 이런 형태)
+    === (A) create_react_agent 프리빌트 ===
+    서울은 현재 맑고 기온은 24도입니다.
+
+    === (B) StateGraph 직접 조립 ===
+    부산은 현재 맑고 기온은 24도입니다.
+
+[흔한 에러]
+    - ImportError: No module named 'langgraph' → pip install -r requirements.txt 재실행
+    - authentication_error (401): ANTHROPIC_API_KEY 미설정 → .env 파일 확인
+    - AttributeError(tool_calls 등): langgraph/langchain 버전 불일치 → requirements.txt 버전으로 재설치
 """
 
 from typing import Annotated, TypedDict
@@ -32,8 +44,7 @@ from langgraph.prebuilt import create_react_agent
 
 load_dotenv()
 
-# 비용 절감: "claude-haiku-4-5" 로 교체 가능 ("claude-sonnet-5" 도 가능)
-MODEL = "claude-opus-4-8"
+MODEL = "claude-opus-4-8"  # 비용 절감: "claude-haiku-4-5" 로 변경
 
 
 # --- 도구 정의 --------------------------------------------------------------

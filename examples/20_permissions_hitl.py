@@ -21,6 +21,23 @@
   기본은 데모용 자동 응답 시나리오로 approve/reject 분기를 모두 보여줍니다.
   실제 콘솔 입력으로 승인받으려면:  python examples/20_permissions_hitl.py --interactive
 ────────────────────────────────────────────────────────────────────
+
+[기대 출력 예시] (LLM 미호출이라 아래와 거의 동일하게 출력되면 성공)
+  → 도구 요청: read_file  |  정책: allow
+     ✅ 실행: (demo) 'notes.txt' 내용을 읽었습니다.
+  → 도구 요청: delete_file  |  정책: ask
+    ⚠️  승인 요청: delete_file({'path': 'prod.db'})  → [사람: 거부]
+     ⛔ 차단: 거부됨(사람): delete_file 실행이 취소되었습니다.
+  → 도구 요청: send_money  |  정책: ask
+    ⚠️  승인 요청: send_money(...)  → [사람: 승인]
+     ✅ 실행: (demo) vendor-42 에게 100000원을 송금했습니다. ← 금전 이동!
+  → 도구 요청: exec_shell  |  정책: deny
+     ⛔ 차단: 거부됨(정책): exec_shell 은 금지된 도구입니다.
+
+[흔한 에러]
+  - ModuleNotFoundError: No module named 'dotenv' → pip install python-dotenv
+  - --interactive 모드에서 입력 대기: 오류 아님 — y/N 을 직접 입력해야 진행됨
+  - 이모지 깨짐(구형 콘솔): 코드가 UTF-8 재설정을 시도하지만 실패 시 표시만 깨질 뿐 동작은 정상
 """
 
 from __future__ import annotations
@@ -40,7 +57,7 @@ except Exception:
 
 load_dotenv()
 
-MODEL = "claude-opus-4-8"  # 이 데모는 LLM을 호출하지 않지만 규칙상 명시 (haiku: "claude-haiku-4-5")
+MODEL = "claude-opus-4-8"  # 비용 절감: "claude-haiku-4-5" 로 변경 — 규칙상 명시(이 예제는 LLM 미호출)
 
 
 # ── 1. 도구 정책 (최소권한 선언) ────────────────────────────────────
