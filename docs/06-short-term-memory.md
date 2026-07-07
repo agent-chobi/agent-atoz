@@ -161,6 +161,126 @@ python examples/09_short_term_memory.py
 | `ModuleNotFoundError: langgraph.checkpoint.sqlite` | `SqliteSaver`는 코어에 없음 → `pip install langgraph-checkpoint-sqlite` (requirements.txt에 포함) |
 | 재실행했더니 이전 실행의 대화가 이어짐 | 정상 동작 — `checkpoints.sqlite` 파일에 영속화됨. 초기화하려면 파일 삭제 |
 
+## 설계 가이드 — 어떤 DB에 무엇이 저장되는가
+
+체크포인터를 "붙이는" 것과 "운영하는" 것은 다른 문제입니다. 이 섹션은 백엔드 선택 기준,
+DB에 실제로 저장되는 데이터의 구조, 그리고 보존·격리 같은 운영 설계를 다룹니다.
+
+### 백엔드 선택: 4가지 선택지
+
+2절 표(클래스·설치)와 아래 실무 트레이드오프 표(운영 특성)에 더해, **설계 관점**의
+비교입니다. Redis 백엔드는 `langgraph-checkpoint-redis`(Redis 공식 유지보수)로 제공됩니다.
+
+| 기준 | `InMemorySaver` | `SqliteSaver` | `PostgresSaver` | `RedisSaver` |
+|------|-----------------|---------------|-----------------|--------------|
+| 동시 쓰기 | 단일 프로세스 한정 | 파일 잠금 — 동시 쓰기 병목 | MVCC — 다중 워커 안전 | 고QPS·저지연 처리 |
+| 수평 확장 | 불가 | 불가(파일 공유 곤란) | 커넥션 풀 + 리드 리플리카 | 클러스터 모드 |
+| 백업·복구 | 없음 | 파일 복사 | `pg_dump`·PITR 등 성숙한 도구 | RDB/AOF 스냅숏 |
+| 보존(TTL) | 프로세스 수명 | 수동 삭제 | 수동 삭제(내장 TTL 없음) | `ttl` 옵션 **내장** |
+| 추천 | 테스트·데모 | 로컬·단일 프로세스 | **프로덕션 기본값** | 저지연·휘발성 세션 |
+
+프로덕션 기본값이 Postgres인 이유: 체크포인트 저장은 스텝마다 여러 행을 함께 넣는
+**트랜잭션 일관성**이 필요한 쓰기 부하이고, 대부분의 팀이 이미 Postgres 운영 경험
+(백업·모니터링·마이그레이션)을 갖고 있기 때문입니다.
+
+```python
+# pip install langgraph-checkpoint-postgres "psycopg[binary,pool]"
+from langgraph.checkpoint.postgres import PostgresSaver
+
+DB_URI = "postgresql://user:pass@localhost:5432/agentdb"
+with PostgresSaver.from_conn_string(DB_URI) as checkpointer:
+    checkpointer.setup()          # 최초 1회 — 테이블 생성·마이그레이션
+    graph = builder.compile(checkpointer=checkpointer)
+    graph.invoke({"messages": [("user", "안녕")]},
+                 {"configurable": {"thread_id": "user-42:conv-7"}})
+```
+
+!!! warning "setup() 주의 2가지"
+    - `Connection`을 직접 만들어 넘길 때는 `autocommit=True`가 아니면 `setup()`의
+      테이블 생성이 커밋되지 않을 수 있습니다.
+    - 비동기 웹 서버(FastAPI 등)에서는 `AsyncPostgresSaver` + 커넥션 풀을 쓰세요.
+
+### 실제로 무엇이 저장되는가
+
+`setup()`은 Postgres에 4개 테이블을 만듭니다.
+
+| 테이블 | 역할 |
+|--------|------|
+| `checkpoints` | 스텝마다 1행 — 스냅샷 본체(JSONB)와 메타데이터 |
+| `checkpoint_blobs` | 대형 채널 값(`messages` 등)의 직렬화 바이너리(BYTEA) |
+| `checkpoint_writes` | 스텝 도중 각 노드가 낸 쓰기(pending writes) — 부분 실패 복구용 |
+| `checkpoint_migrations` | 라이브러리가 관리하는 스키마 버전 |
+
+`checkpoints` 한 행을 논리적으로 펼치면 이런 모양입니다(개념 예시):
+
+```json
+{
+  "thread_id": "user-42:conv-7",                 // 대화(스레드) 식별자
+  "checkpoint_ns": "",                           // 서브그래프 구분 네임스페이스
+  "checkpoint_id": "1f05d2b0-...-8004",          // 이 스냅샷의 ID(시간순 정렬 가능)
+  "parent_checkpoint_id": "1f05d2b0-...-8003",   // 직전 스냅샷 → 타임트래블 체인
+  "checkpoint": {
+    "v": 1,
+    "ts": "2026-07-08T04:32:11.220445+00:00",
+    "channel_values": {"messages": "<checkpoint_blobs 참조>"},
+    "channel_versions": {"messages": "00000005.0.52..."},
+    "versions_seen": {"agent": {"messages": "00000004.0.13..."}}
+  },
+  "metadata": {"source": "loop", "step": 4, "writes": {"agent": "..."}, "parents": {}}
+}
+```
+
+- **channel_values**가 상태의 본체입니다. `messages`처럼 크고 자주 바뀌는 채널 값은
+  JSONB에 인라인되지 않고 `JsonPlusSerializer`(ormsgpack 기반 — msgpack, 실패 시 확장
+  JSON 폴백)로 직렬화되어 **`checkpoint_blobs`에 채널·버전 단위로 분리 저장**되고,
+  본체에는 버전 참조만 남습니다. 바뀌지 않은 채널이 스텝마다 중복 저장되지 않는 이유입니다.
+- **metadata.source**는 이 체크포인트가 생긴 이유입니다 — `input`(사용자 입력),
+  `loop`(그래프 스텝), `update`(`update_state`), `fork`(분기).
+- 노드 실행 도중 프로세스가 죽으면 성공한 노드의 쓰기가 `checkpoint_writes`에 남아 있어,
+  재개 시 그 노드들을 다시 실행하지 않습니다.
+
+!!! danger "직렬화 보안"
+    blob은 msgpack 바이너리라, DB 쓰기 권한을 가진 공격자가 악성 객체를 심으면 역직렬화
+    시 코드 실행으로 이어질 수 있습니다(CVE-2025-64439 계열). 환경 변수
+    `LANGGRAPH_STRICT_MSGPACK=true`로 역직렬화 허용 타입을 제한하세요 — 아래 트렌드
+    섹션의 RCE 사례와 같은 맥락입니다.
+
+### 운영 설계 3가지
+
+**1) 증가율과 보존 정책.** 체크포인트는 **super-step마다 1개** 생깁니다. ReAct 한 턴이
+3~5스텝이면 하루 1만 턴 서비스는 하루 3~5만 행 + 채널별 blob이 쌓입니다. OSS
+`PostgresSaver`/`SqliteSaver`에는 **내장 TTL이 없으므로** 직접 정리합니다 —
+`checkpointer.delete_thread(thread_id)`로 스레드 단위 삭제, 또는 비활성 스레드를 지우는
+배치 SQL. 반면 Redis 백엔드는 `ttl={"default_ttl": 10080, "refresh_on_read": True}`
+(분 단위, 읽을 때 연장)처럼 **자동 만료가 내장**돼 있고, 관리형(LangSmith Deployment)은
+설정으로 TTL을 지정합니다.
+
+**2) thread_id 설계와 멀티테넌시.** `f"{user_id}:{conversation_id}"` 합성이 관례입니다
+(3절 팁의 확장 — 사용자별 대화 목록 조회와 사용자 단위 일괄 삭제가 쉬워집니다).
+주의: 체크포인터에는 권한 개념이 없어서 **남의 thread_id를 알면 남의 대화를 읽습니다**.
+클라이언트가 보낸 값을 그대로 쓰지 말고, 서버에서 인증된 user_id로 접두사를 강제하고
+조회 전 소유권을 검증하세요. 테넌트 분리가 계약 요건이면 접두사 수준이 아니라
+스키마/DB 분리까지 고려합니다.
+
+**3) 스키마 마이그레이션.** 테이블 스키마는 라이브러리 소유입니다 —
+`checkpoint_migrations`가 버전을 추적하고, 패키지 업그레이드 후 `setup()`을 재실행하면
+필요한 마이그레이션이 적용됩니다. 테이블을 직접 ALTER 하지 마세요. 반면 **상태 스키마**
+(State TypedDict)를 바꾸면 옛 체크포인트와 어긋날 수 있으니, 필드 추가는 기본값과 함께,
+필드 제거·개명은 구버전 스레드가 만료된 뒤에 하는 것이 안전합니다.
+
+### 결정 트리
+
+```mermaid
+flowchart TD
+    A["체크포인터 선택"] --> B{"재시작 후에도<br/>대화가 남아야?"}
+    B -->|아니오| M["InMemorySaver"]
+    B -->|예| C{"단일 프로세스<br/>(CLI·데스크톱)?"}
+    C -->|예| S["SqliteSaver"]
+    C -->|아니오| D{"세션이 짧고<br/>자동 만료가 필요?"}
+    D -->|"예 — 저지연·TTL"| R["RedisSaver"]
+    D -->|"아니오 — 내구성 우선"| P["PostgresSaver ★ 기본값"]
+```
+
 ## 실무 트레이드오프
 
 세 저장소는 기능이 같고 **운영 특성**이 다릅니다. "어디에 저장되는가"가 곧

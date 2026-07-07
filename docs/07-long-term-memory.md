@@ -174,6 +174,130 @@ python examples/10_long_term_memory.py
 | `ModuleNotFoundError: langmem` | 선택 의존성 — 없어도 1부는 동작. 필요하면 `pip install langmem` |
 | 재실행하면 기억이 사라짐 | 정상 — `InMemoryStore`는 RAM 저장. 영속화는 `PostgresStore` 등으로 |
 
+## 설계 가이드 — 어떤 저장소에 무엇을 담는가
+
+### 저장소 선택
+
+LangGraph `BaseStore`의 공식 영속 구현은 **PostgresStore**(`langgraph-checkpoint-postgres`
+패키지에 동봉, pgvector로 의미 검색)와 **RedisStore**(`langgraph-checkpoint-redis`)입니다.
+그 외 DB는 mem0 같은 라이브러리의 백엔드로 쓰거나 직접 연동합니다.
+
+| 저장소 | BaseStore 공식 지원 | 벡터 검색 | 하이브리드(키워드+벡터) | 운영 부담·비용 |
+|--------|--------------------|-----------|------------------------|----------------|
+| Postgres + pgvector | ✅ `PostgresStore` | pgvector(HNSW) | SQL 필터 + 벡터 조합 | 기존 DB에 확장만 — **스택 단순화** |
+| Redis | ✅ `RedisStore` | Redis Query Engine | 태그 필터 + 벡터 | 저지연·TTL, 메모리 비용 ↑ |
+| MongoDB | ❌ (직접/mem0 경유) | Atlas Vector Search | `$vectorSearch`+필터 | 문서 모델 유연, Atlas 종속 |
+| 전용 벡터DB (Qdrant·Pinecone·Chroma·Weaviate) | ❌ (mem0 등 경유) | 전문 — 대규모에 최적 | 제품별 상이 | 인프라 1개 추가, 관리형은 종량 과금 |
+
+기본 선택은 06장 체크포인터와 **같은 Postgres**에 스토어까지 두는 것입니다 — 백업·모니터링
+대상이 하나로 줄고, 기억 수백만 건 이하에선 pgvector로 충분합니다. 전용 벡터DB는 기억이
+수천만 건 이상이거나 검색 QPS가 병목일 때 도입합니다.
+
+```python
+# pip install langgraph-checkpoint-postgres  (PostgresStore 동봉)
+from langgraph.store.postgres import PostgresStore
+
+with PostgresStore.from_conn_string(
+    DB_URI,
+    index={"dims": 1536, "embed": "openai:text-embedding-3-small",
+           "fields": ["content"]},          # content 필드만 임베딩
+) as store:
+    store.setup()                           # 최초 1회 — 테이블·인덱스 생성
+    graph = builder.compile(checkpointer=checkpointer, store=store)
+```
+
+### 무엇을 저장하는가 — 기억 3분류별 페이로드
+
+2절의 분류를 실제 저장 값으로 옮기면 이렇습니다. 값은 자유 형식 dict지만, **일관된 필드
+규약**이 있어야 갱신·정리·감사가 가능해집니다.
+
+```json
+// 의미(semantic) — namespace=("user-42", "preferences"), key="email-tone"
+{"type": "preference",
+ "content": "이메일 초안은 존댓말로 작성",
+ "confidence": 0.9,
+ "source_thread": "user-42:conv-7",
+ "updated_at": "2026-07-08T04:40:00Z"}
+```
+
+```json
+// 에피소드(episodic) — namespace=("user-42", "episodes"), key=uuid
+{"type": "episode",
+ "situation": "월간 보고서 요약을 요청받음",
+ "action": "표 없이 핵심 불릿 5개로 요약",
+ "outcome": "사용자가 '딱 좋다'고 평가",
+ "lesson": "이 사용자는 표보다 불릿을 선호",
+ "occurred_at": "2026-07-01T09:12:00Z"}
+```
+
+```json
+// 절차(procedural) — namespace=("agent", "instructions"), key="report-style"
+{"type": "instruction",
+ "content": "보고서 요약 시: 1) 핵심 수치 먼저 2) 불릿 5개 이하 3) 끝에 리스크 한 줄",
+ "version": 3}
+```
+
+공통 규약: `content`(임베딩 대상 — `index.fields`와 일치), `confidence`(모순 해소 시 판단
+근거), `source_thread`(왜 이 기억이 생겼는지 추적 — 감사·디버깅), `updated_at`(감쇠·정리 기준).
+
+**namespace 설계 원칙** — 검색은 네임스페이스 안에서만 일어나므로, namespace가 곧
+**격리 경계이자 검색 범위**입니다.
+
+| 설계 | 예 | 적합 | 트레이드오프 |
+|------|----|------|--------------|
+| `(user_id, 카테고리)` | `("user-42", "preferences")` | 단일 서비스 | 단순 — 조직 격리 없음 |
+| `(org_id, user_id, 카테고리)` | `("acme", "user-42", "episodes")` | 멀티테넌트 SaaS | 테넌트 격리 확실, 조직 공통 기억은 별도 namespace 필요 |
+
+원칙: **앞쪽에 격리 축(테넌트→사용자), 뒤쪽에 분류 축**. 격리 축을 생략하면 검색 범위가
+넓어져 회상률은 오르지만 다른 사용자의 기억이 섞이는 사고로 직결됩니다. thread_id처럼
+namespace도 서버에서 인증된 값으로 강제 구성하세요.
+
+### 쓰기 경로: hot path vs background
+
+| 기준 | **hot path** (대화 중 도구로 즉시 저장) | **background** (대화 후 배치 추출) |
+|------|------------------------------------------|-------------------------------------|
+| 응답 지연 | 턴 안에서 추가 LLM·DB 왕복 — 지연 ↑ | 응답 경로와 분리 — 지연 영향 없음 |
+| 누락 위험 | 낮음(그 자리에서 저장) | 있음(배치 전 세션 이탈·추출 실패) |
+| 반영 시점 | 즉시 — 같은 대화에서 바로 회상 가능 | 지연 — 처리 완료까지 회상 불가 |
+| 구현 | 메모리 도구 + 프롬프트 지시 | 대화 종료 트리거 + 추출 파이프라인 |
+
+라이브러리 대응(웹 확인): **LangMem은 둘 다** 제공합니다 — hot path용
+`create_manage_memory_tool`과 background용 memory manager. **mem0는 hot path 쪽**입니다 —
+`add()` 호출 시점에 LLM이 동기로 사실을 추출·저장합니다. **Zep은 background형**입니다 —
+비동기로 시간축 지식 그래프를 구축하므로 저장 직후엔 회상이 안 되고 처리 완료 후 반영되는
+특성이 보고돼 있습니다. 실무 권장은 **하이브리드**: "이건 기억해줘" 같은 명시 요청은
+hot path 도구로, 나머지는 대화 종료 후 background 추출로.
+
+### 검색 설계
+
+- **임베딩 모델**: ① 차원(dims) — 저장 용량·인덱스 크기·검색 속도에 비례. ② 다국어 —
+  한국어 서비스면 다국어 벤치마크(MTEB 등) 확인. ③ 비용 — 쓰기(저장 시)와 읽기(질의 시)
+  모두 임베딩 호출이 발생. 주의: `dims`는 인덱스 생성 시 고정되므로 **모델 교체 = 전체
+  재임베딩**입니다. 모델 선택을 서두르지 마세요.
+- **top-k + 유사도 임계값**: top-k(3~5)만 쓰면 관련 없는 기억도 "항상 k개" 주입됩니다.
+  점수 임계값을 함께 걸어 미달이면 아예 주입하지 않는 쪽이 안전합니다(4절 과부하 참고).
+- **기억 갱신 전략 4가지**: ① 동일 사실은 같은 key로 **upsert**(`put`은 같은 key를
+  덮어씀 — 선호 변경이 자연 반영). ② **모순 해소** — 새 사실이 기존과 충돌하면 최신
+  우선 + `confidence` 비교. ③ **감쇠** — `updated_at` 오래된 기억의 가중치를 낮추고
+  정리 배치로 삭제. ④ **중복 병합** — 유사도 높은 기억을 주기적으로 통합. ②~④가 바로
+  LangMem background manager와 mem0 `add()` 파이프라인이 자동화해 주는 부분입니다.
+
+### 결정 트리
+
+```mermaid
+flowchart TD
+    A["장기 메모리 설계"] --> B{"이미 Postgres 운영 중?"}
+    B -->|예| P["PostgresStore + pgvector<br/>★ 스택 단순화"]
+    B -->|아니오| C{"기억 수천만 건↑<br/>검색 QPS 병목?"}
+    C -->|예| V["전용 벡터DB<br/>(Qdrant·Pinecone 등)"]
+    C -->|아니오| R["RedisStore<br/>(저지연·TTL)"]
+    P --> D{"쓰기 경로"}
+    V --> D
+    R --> D
+    D -->|"누락 최소화·명시 저장"| H["hot path 도구<br/>(LangMem tool / mem0 add)"]
+    D -->|"응답 지연 최소화"| G["background 추출<br/>(LangMem manager / Zep)"]
+```
+
 ## 실무 트레이드오프
 
 장기 메모리를 도입하는 세 가지 경로 — 라이브러리 둘, 그리고 직접 구현 — 의 비교입니다.
