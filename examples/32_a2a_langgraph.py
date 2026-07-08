@@ -59,7 +59,7 @@ if hasattr(sys.stdout, "reconfigure"):
 
 load_dotenv()
 
-MODEL = "claude-opus-4-8"  # 비용 절감: "claude-haiku-4-5" 로 변경
+MODEL = "claude-haiku-4-5"  # 고성능 필요 시: "claude-opus-4-8" 로 변경
 HOST, PORT = "localhost", 9998  # 17번(9999)과 충돌하지 않게 별도 포트
 BASE_URL = f"http://{HOST}:{PORT}"
 

@@ -87,14 +87,15 @@ mkdocs serve   # http://127.0.0.1:8000
 
 ## 사용 모델
 
-예제는 기본적으로 `claude-opus-4-8`을 사용합니다. 학습/실험 비용을 아끼려면 각 예제 상단의
-`MODEL` 상수를 `claude-haiku-4-5`(가장 저렴)나 `claude-sonnet-5`로 바꾸세요.
+예제는 기본적으로 `claude-haiku-4-5`를 사용합니다(빠르고 저렴 — 학습 목적에 충분).
+더 높은 품질이 필요하면 각 예제 상단의 `MODEL` 상수를 `claude-opus-4-8`이나
+`claude-sonnet-5`로 바꾸세요 (각 파일 주석에 안내돼 있습니다).
 
 | 모델 | ID | 입력/출력 ($/1M) | 용도 |
 |------|----|------------------|------|
-| Claude Opus 4.8 | `claude-opus-4-8` | $5 / $25 | 기본값, 가장 강력 |
+| Claude Haiku 4.5 | `claude-haiku-4-5` | $1 / $5 | **기본값**, 빠르고 저렴 |
 | Claude Sonnet 5 | `claude-sonnet-5` | $3 / $15 | 속도·지능 균형 |
-| Claude Haiku 4.5 | `claude-haiku-4-5` | $1 / $5 | 빠르고 저렴 |
+| Claude Opus 4.8 | `claude-opus-4-8` | $5 / $25 | 가장 강력 (프로덕션·복잡한 추론) |
 
 ## 참고 자료
 

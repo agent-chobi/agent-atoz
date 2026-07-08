@@ -15,8 +15,8 @@ pip install -r requirements.txt      # 저장소 루트의 requirements.txt
 #   ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-기본 모델은 `claude-opus-4-8` 입니다. 비용을 아끼려면 각 파일 상단의 `MODEL` 을
-`"claude-haiku-4-5"` 로 바꾸세요.
+기본 모델은 `claude-haiku-4-5`(빠르고 저렴) 입니다. 고성능이 필요하면 각 파일 상단의 `MODEL` 을
+`"claude-opus-4-8"` 로 바꾸세요.
 
 ## 단계 구성
 

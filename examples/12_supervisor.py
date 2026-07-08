@@ -45,7 +45,7 @@ from langgraph_supervisor import create_supervisor
 
 load_dotenv()
 
-MODEL = "claude-opus-4-8"  # 비용 절감: "claude-haiku-4-5" 로 변경
+MODEL = "claude-haiku-4-5"  # 고성능 필요 시: "claude-opus-4-8" 로 변경
 
 
 # --- 워커가 사용할 도구 (데모용 가짜 구현) -----------------------------------

@@ -47,7 +47,7 @@ from langgraph.store.memory import InMemoryStore
 load_dotenv()
 
 # langmem 데모(선택)에서만 사용.
-MODEL = "claude-opus-4-8"  # 비용 절감: "claude-haiku-4-5" 로 변경
+MODEL = "claude-haiku-4-5"  # 고성능 필요 시: "claude-opus-4-8" 로 변경
 
 USER_ID = "alex"
 

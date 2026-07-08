@@ -43,7 +43,7 @@ from langchain_core.tools import tool
 
 load_dotenv()  # .env 에서 ANTHROPIC_API_KEY 로드
 
-MODEL = "claude-opus-4-8"  # 비용 절감: "claude-haiku-4-5" 로 변경
+MODEL = "claude-haiku-4-5"  # 고성능 필요 시: "claude-opus-4-8" 로 변경
 
 
 def build_chain():

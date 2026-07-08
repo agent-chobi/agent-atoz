@@ -60,7 +60,7 @@ load_dotenv()  # ANTHROPIC_API_KEY 로드
 
 # 예외: 이 SDK 는 축약 별칭("opus"/"sonnet"/"haiku")을 받는다 —
 # 다른 예제의 "claude-haiku-4-5" 같은 전체 모델 ID 대신 별칭을 쓴다.
-MODEL = "opus"  # 비용 절감: "haiku" 로 변경
+MODEL = "haiku"  # 고성능 필요 시: "opus" 로 변경
 
 
 async def main():

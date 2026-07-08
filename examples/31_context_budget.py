@@ -57,7 +57,7 @@ if hasattr(sys.stdout, "reconfigure"):
 
 load_dotenv()
 
-MODEL = "claude-opus-4-8"  # 비용 절감: "claude-haiku-4-5" 로 변경
+MODEL = "claude-haiku-4-5"  # 고성능 필요 시: "claude-opus-4-8" 로 변경
 
 # ---------------------------------------------------------------------------
 # 1) 섹션별 토큰 예산 — 총 컨텍스트를 용도별로 나눠서 상한을 건다.

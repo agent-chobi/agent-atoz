@@ -42,7 +42,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-MODEL = "claude-opus-4-8"  # 비용 절감: "claude-haiku-4-5" 로 변경
+MODEL = "claude-haiku-4-5"  # 고성능 필요 시: "claude-opus-4-8" 로 변경
 
 # 이 클라이언트가 띄울 서버 스크립트 (같은 폴더의 15_mcp_server.py)
 SERVER_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "15_mcp_server.py")

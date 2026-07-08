@@ -40,9 +40,9 @@ except Exception:
 
 load_dotenv()
 
-# 기본은 가장 강력한 Opus. 비용을 아끼려면 아래 한 줄로 교체:
-# MODEL = "claude-haiku-4-5"   # 빠르고 저렴
-MODEL = "claude-opus-4-8"
+# 기본은 빠르고 저렴한 Haiku. 고성능이 필요하면 아래 한 줄로 교체:
+# MODEL = "claude-opus-4-8"   # 가장 강력
+MODEL = "claude-haiku-4-5"
 
 
 # ── 리서치 도구 (데모용 가짜 검색 — Step 2~5 에서도 재사용) ────────────────

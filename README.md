@@ -63,8 +63,8 @@ agent-atoz/
 
 ## 사용 모델
 
-예제 기본값은 `claude-opus-4-8`. 비용을 아끼려면 각 예제 상단 `MODEL` 상수를
-`claude-haiku-4-5`(가장 저렴) 또는 `claude-sonnet-5`로 변경.
+예제 기본값은 `claude-haiku-4-5`(빠르고 저렴 — 학습에 충분). 더 높은 품질이 필요하면 각 예제 상단 `MODEL` 상수를
+`claude-opus-4-8`(가장 강력) 또는 `claude-sonnet-5`(균형)로 변경.
 
 ## 참고 자료
 

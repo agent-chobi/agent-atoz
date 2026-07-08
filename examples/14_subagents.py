@@ -51,7 +51,7 @@ load_dotenv()
 
 # 예외: deepagents 는 "provider:model" 형식 문자열을 받는다 —
 # 다른 예제의 "claude-haiku-4-5" 대신 "anthropic:claude-haiku-4-5" 형식.
-MODEL = "anthropic:claude-opus-4-8"  # 비용 절감: "anthropic:claude-haiku-4-5" 로 변경
+MODEL = "anthropic:claude-haiku-4-5"  # 고성능 필요 시: "anthropic:claude-opus-4-8" 로 변경
 
 
 # --- 서브에이전트가 사용할 도구 (데모용 가짜 검색) ----------------------------

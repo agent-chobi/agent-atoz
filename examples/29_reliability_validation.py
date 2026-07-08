@@ -5,7 +5,7 @@
 ---------------
 (A) 재시도 + 폴백 데코레이터
     - 일시적 실패(429/5xx 등)를 지수 백오프로 재시도하고,
-    - 재시도를 소진하면 폴백 모델 체인(Opus 실패 → Sonnet)으로 갈아탄다.
+    - 재시도를 소진하면 폴백 모델 체인(주 모델 실패 → Sonnet)으로 갈아탄다.
     - 동작을 눈으로 확인할 수 있게, 먼저 "2번 실패 후 성공하는 가짜 함수"로 시연한다.
 
 (B) 3단 검증 게이트 파이프라인 (스키마 → 규칙 → LLM judge)
@@ -74,7 +74,7 @@ except Exception:
 
 load_dotenv()
 
-MODEL = "claude-opus-4-8"  # 비용 절감: "claude-haiku-4-5" 로 변경
+MODEL = "claude-haiku-4-5"  # 고성능 필요 시: "claude-opus-4-8" 로 변경
 FALLBACK_MODEL = "claude-sonnet-5"  # 주 모델 실패 시 갈아탈 모델
 
 

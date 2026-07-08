@@ -39,7 +39,7 @@ from langgraph.types import Command, interrupt
 
 load_dotenv()
 
-MODEL = "claude-opus-4-8"  # 비용 절감: "claude-haiku-4-5" 로 변경 — 규칙상 명시(이 예제는 LLM 미호출, 20번과 동일 패턴)
+MODEL = "claude-haiku-4-5"  # 고성능 필요 시: "claude-opus-4-8" 로 변경 — 규칙상 명시(이 예제는 LLM 미호출, 20번과 동일 패턴)
 
 
 class State(TypedDict):

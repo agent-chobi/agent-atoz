@@ -173,6 +173,16 @@
   line-height: 1.45;
 }
 
+/* 사이트명(Agent A to Z)과 첫 항목('홈')이 겹치지 않게 간격 확보 */
+.md-sidebar--primary .md-nav--primary > .md-nav__title {
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.6rem;
+}
+
+.md-sidebar--primary .md-nav--primary > .md-nav__list {
+  padding-top: 0.3rem;
+}
+
 .md-sidebar--primary .md-nav__link {
   margin-top: 0.1em;
 }

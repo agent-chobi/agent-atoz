@@ -44,7 +44,7 @@ from langgraph.prebuilt import create_react_agent
 
 load_dotenv()
 
-MODEL = "claude-opus-4-8"  # 비용 절감: "claude-haiku-4-5" 로 변경
+MODEL = "claude-haiku-4-5"  # 고성능 필요 시: "claude-opus-4-8" 로 변경
 
 
 # --- 도구 정의 --------------------------------------------------------------

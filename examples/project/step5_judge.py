@@ -49,9 +49,9 @@ load_dotenv()
 # Step 2 의 팀 빌더를 그대로 재사용 (누적 확장)
 from step2_supervisor import build_team  # noqa: E402
 
-# 기본은 가장 강력한 Opus. 비용을 아끼려면 아래 한 줄로 교체:
-# MODEL = "claude-haiku-4-5"   # 빠르고 저렴 (반복 채점용 judge 에 특히 적합)
-MODEL = "claude-opus-4-8"
+# 기본은 빠르고 저렴한 Haiku. 고성능이 필요하면 아래 한 줄로 교체:
+# MODEL = "claude-opus-4-8"   # 가장 강력 (반복 채점용 judge 에 특히 적합)
+MODEL = "claude-haiku-4-5"
 
 PASS_SCORE = 4      # 이 점수 이상이면 합격
 MAX_REVISIONS = 1   # 재작성 상한 — 없으면 무한 왕복·비용 폭증 (09장 안티패턴)

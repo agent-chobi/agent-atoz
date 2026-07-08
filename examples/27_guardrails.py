@@ -62,7 +62,7 @@ except Exception:
 
 load_dotenv()
 
-MODEL = "claude-opus-4-8"  # 비용 절감: "claude-haiku-4-5" 로 변경
+MODEL = "claude-haiku-4-5"  # 고성능 필요 시: "claude-opus-4-8" 로 변경
 GUARD_MODEL = "claude-haiku-4-5"  # 가드는 싸고 빠른 모델로 — 다층 방어의 "가벼운 층"
 
 # 이 봇의 주제 범위(topic restriction). 층2의 판정 기준으로 쓰인다.
