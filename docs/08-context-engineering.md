@@ -214,6 +214,12 @@ python examples/11_context_engineering.py
 - [langchain-ai/context_engineering (GitHub)](https://github.com/langchain-ai/context_engineering) —
   선택·압축·격리 계열 전략을 LangGraph로 구현한 공식 예제 코드 모음.
 
+### 함께 보면 좋은 한국어 자료
+
+- [엔터프라이즈 LLM 서비스 구축기 1: 컨텍스트 엔지니어링 — LINE(LY Corporation) 기술블로그](https://techblog.lycorp.co.jp/ko/building-an-llm-service-for-enterprise-1-context-engineering) — 사내 LLM 서비스를 만들며 컨텍스트를 어떻게 선별·구성했는지 담은 국내 기업 실전 구축기.
+- [Context Engineering: AI 시대의 새로운 핵심 역량 — SK DEVOCEAN](https://devocean.sk.com/blog/techBoardDetail.do?ID=167772&boardType=techBlog) — "노이즈를 줄이고 신호만 남겨라"라는 이 챕터의 핵심 메시지를 프롬프트 엔지니어링과 대비해 쉽게 설명.
+- [프롬프트 엔지니어링 시대는 끝? 컨텍스트 엔지니어링 — 브런치](https://brunch.co.kr/@potbloom/6) — 프롬프트 대비 컨텍스트 엔지니어링이 무엇이 다른지 비개발자 눈높이로 풀어주는 개념 소개 글.
+
 ## 참고 자료
 
 - [Effective context engineering for AI agents (Anthropic)](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)

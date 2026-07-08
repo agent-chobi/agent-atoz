@@ -250,6 +250,13 @@ python examples/07_langgraph_hitl.py
 - [LangGraph Platform is now Generally Available](https://www.langchain.com/blog/langgraph-platform-ga) —
   스테이트풀 에이전트 배포 인프라(현 LangSmith Deployment)의 GA 발표.
 
+### 함께 보면 좋은 한국어 자료
+
+- [LangGraph 개념 완전 정복 몰아보기(3시간) — 테디노트 (YouTube)](https://www.youtube.com/watch?v=W_uwR_yx4-c) — 상태·노드·엣지부터 조건분기·메모리까지, 이 챕터의 핵심 3요소를 한국어 강의로 몰아 배우는 영상.
+- [LangGraph를 활용한 Agent 구축 — <랭체인LangChain 노트> WikiDocs](https://wikidocs.net/264624) — StateGraph로 에이전트를 조립하는 과정을 한국어 실습 코드로 따라가는 무료 책의 해당 장.
+- [LangGraph 가이드북 - 에이전트 RAG with 랭그래프 — WikiDocs](https://wikidocs.net/book/16723) — LangGraph 기초부터 ReAct 에이전트·HITL·멀티에이전트까지 다루는 무료 한국어 책.
+- [LangChain의 새로운 라이브러리 LangGraph 훑어보기 — 에스코어](https://s-core.co.kr/insight/view/langchain%EC%9D%98-%EC%83%88%EB%A1%9C%EC%9A%B4-%EB%9D%BC%EC%9D%B4%EB%B8%8C%EB%9F%AC%EB%A6%AC-langgraph-%ED%9B%91%EC%96%B4%EB%B3%B4%EA%B8%B0/) — LangChain만으로는 왜 부족하고 그래프 구조가 왜 필요한지를 국내 기업 기술블로그 시각에서 정리.
+
 ## 참고 자료
 
 - [LangGraph 개요 (OSS Python)](https://docs.langchain.com/oss/python/langgraph/overview)

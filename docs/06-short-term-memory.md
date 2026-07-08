@@ -326,6 +326,11 @@ flowchart TD
 - [LangGraph v0.2: 새 체크포인터 라이브러리](https://blog.langchain.com/langgraph-v0-2/) —
   체크포인터가 `checkpoint-sqlite`/`checkpoint-postgres` 별도 패키지로 분리된 배경(공식 블로그).
 
+### 함께 보면 좋은 한국어 자료
+
+- [체크포인터 활용 (Memory) — LangGraph 가이드북, WikiDocs](https://wikidocs.net/261582) — MemorySaver·SqliteSaver와 `thread_id` 설정으로 대화를 이어가는 과정을 한국어 실습 코드로 보여주는 무료 책의 해당 장.
+- [LangChain Academy: Introduction to LangGraph (Module 2) 강의노트 — velog @euisuk-chung](https://velog.io/@euisuk-chung/LangChain-Academy-Introduction-to-LangGraph-Module-2) — 공식 아카데미의 상태·메모리 모듈(체크포인터로 챗봇에 기억 붙이기)을 한국어로 정리한 강의노트.
+
 ## 참고 자료
 
 - [LangGraph Persistence](https://docs.langchain.com/oss/python/langgraph/persistence)

@@ -410,6 +410,12 @@ python examples/02_streaming.py
 - [A Hands-On Guide to Anthropic's Structured Output — Towards Data Science](https://towardsdatascience.com/hands-on-with-anthropics-new-structured-output-capabilities/) — 구조화 출력 기능을 코드로 훑는 실습 튜토리얼.
 - [Prompt Caching in 2026: Cut LLM Costs, Keep Quality](https://www.digitalapplied.com/blog/prompt-caching-2026-cut-llm-costs-engineering-guide) — 캐싱 도입 시점·프리픽스 설계에 대한 엔지니어링 가이드.
 
+### 함께 보면 좋은 한국어 자료
+
+- [클로드(Claude) API 완벽 가이드 — 프롬프트해커 대니](https://www.magicaiprompts.com/docs/develop-ai-service/claude-api-complete-guide/) — API 키 발급부터 Python SDK 설치, 첫 요청, Streamlit 챗봇까지 한국어로 차근차근 따라가는 입문 가이드.
+- [Anthropic SDK로 Claude API 활용하기 — PALDYN 기술블로그](https://techblog.paldyn.com/posts/anthropic-sdk/) — Python SDK의 핵심 사용 패턴(메시지 생성·파라미터)을 실전 코드 위주로 압축 정리.
+- [Anthropic Claude 사용 및 API 사용법 — 김형 BLOG](https://hypro2.github.io/anthropic-claude3/) — 클라이언트 선언부터 메시지 생성까지, 최소 예제로 Messages API 호출 흐름을 빠르게 보여준다.
+
 다음 장에서는 이 위에 **도구**를 얹어, 모델이 스스로 행동하고 관찰하는
 [에이전트 루프](02-tool-use-agent-loop.md)를 만듭니다.
 

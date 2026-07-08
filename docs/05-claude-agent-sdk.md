@@ -234,6 +234,12 @@ python examples/08_claude_agent_sdk.py
 - [Claude Agent SDK Full Workshop (YouTube)](https://www.youtube.com/watch?v=TqC1qOfiVcQ) —
   Anthropic 소속 발표자가 진행한 실습 중심 SDK 워크숍 영상(2026-01).
 
+### 함께 보면 좋은 한국어 자료
+
+- [Claude Agent SDK로 나만의 AI 에이전트 만들기 — MadPlay](https://madplay.github.io/post/claude-agent-sdk-tutorial) — `query()`·세션 유지·커스텀 도구·훅·권한 관리까지 이 챕터의 흐름을 그대로 한국어로 따라가고, PR 자동 리뷰 에이전트 예제로 마무리하는 튜토리얼.
+- [Claude Agent SDK 완전 가이드 — BLUEBUG'S BLOG](https://k82022603.github.io/posts/claude-agent-sdk-%EC%99%84%EC%A0%84-%EA%B0%80%EC%9D%B4%EB%93%9C/) — 설치부터 MCP 서버 통합·서브에이전트 병렬 처리, "멀티 에이전트 개인 비서" 구축까지 14단계로 풀어낸 종합 가이드.
+- [코딩 에이전트 핵심 개념 완전 가이드 — yceffort](https://yceffort.kr/2026/01/coding-agent-core-concepts) — SDK가 상속하는 Claude Code 런타임의 개념들(Rules·Hooks·Skills·서브에이전트·MCP)을 한국어로 한 번에 정리.
+
 ## 참고 자료
 
 - [Claude Agent SDK 개요](https://docs.claude.com/en/api/agent-sdk/overview)

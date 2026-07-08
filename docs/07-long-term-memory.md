@@ -344,6 +344,12 @@ flowchart TD
 - [Mem0: Building Production-Ready AI Agents with Scalable Long-Term Memory (논문)](https://arxiv.org/abs/2504.19413) —
   mem0의 2단계(추출→갱신) 파이프라인과 그래프 변형을 담은 원 논문.
 
+### 함께 보면 좋은 한국어 자료
+
+- [Mem0: AI 에이전트의 단기 기억 상실증을 해결하는 장기 기억 저장소 — 함께해요 파이썬 생태계, WikiDocs](https://wikidocs.net/347132) — mem0가 대화에서 핵심 정보만 추출해 저장·검색하는 원리를 한국어로 쉽게 설명하는 무료 책의 해당 장.
+- [AI Agent를 위한 장기 메모리 솔루션: Mem0 완벽 가이드 — CHOONZANG 블로그](https://blog.choonzang.com/it/ai/4348/) — mem0 설치와 add/search API 사용법을 실습 위주로 정리한 한국어 가이드.
+- [LLM과 AI 에이전트를 위한 오픈소스 기억 계층, 멤제로(Mem0)란? — ITWorld Korea](https://www.itworld.co.kr/article/4030999/llm%EA%B3%BC-ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8%EB%A5%BC-%EC%9C%84%ED%95%9C-%EC%98%A4%ED%94%88%EC%86%8C%EC%8A%A4-%EA%B8%B0%EC%96%B5-%EA%B3%84%EC%B8%B5-%EB%A9%A4%EC%A0%9C%EB%A1%9Cmem0%EB%9E%80.html) — 기억 계층(memory layer)이 왜 필요한지, 벡터 DB·지식 그래프에 무엇을 담는지를 기사 형식으로 풀어준다.
+
 ## 참고 자료
 
 - [LangGraph Memory (스토어)](https://docs.langchain.com/oss/python/langgraph/add-memory)

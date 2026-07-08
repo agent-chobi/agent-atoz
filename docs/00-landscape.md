@@ -176,6 +176,12 @@ flowchart LR
 - [How We Build Effective Agents — Barry Zhang(Anthropic), AI Engineer Summit (YouTube)](https://www.youtube.com/watch?v=D7_ipDqhtwk) — "모든 곳에 에이전트를 쓰지 말라"는 이 챕터 1절 메시지의 발표판. 환경·도구·시스템 프롬프트 3요소로 단순하게 설계하는 법.
 - [Effective context engineering for AI agents — Anthropic Engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) — 규율(컨텍스트 엔지니어링) 계층이 왜 별도 분과가 됐는지에 대한 공식 해설.
 
+### 함께 보면 좋은 한국어 자료
+
+- [AI 에이전트란? 개념부터 스타트업 기회까지 완벽 정리 — 카카오벤처스 블로그](https://www.kakao.vc/blog/kv-talk-AI-Agents) — 에이전트가 무엇이고 어디에 쓰이는지, 전체 생태계 지형을 비전공자도 읽을 수 있게 풀어준다.
+- [2026년 기업 AI 전환의 해답, 멀티에이전트 시스템이 필요한 이유 — SK AX 인사이트](https://www.skax.co.kr/insight/trend/3626) — 오케스트레이션 vs 코레오그래피 등 멀티에이전트 아키텍처 유형을 기업 도입 관점에서 쉽게 설명.
+- [당근에서 LLM 활용하기 — 당근 테크 블로그](https://medium.com/daangn/%EB%8B%B9%EA%B7%BC%EC%97%90%EC%84%9C-llm-%ED%99%9C%EC%9A%A9%ED%95%98%EA%B8%B0-76131ecebce1) — "정말 에이전트가 필요한가?"라는 이 챕터 1절 질문에 대한 국내 서비스의 답: 단순한 LLM 활용부터 시작한 실제 사례.
+
 ## 참고 자료
 
 - [Building Effective Agents — Anthropic](https://www.anthropic.com/research/building-effective-agents)

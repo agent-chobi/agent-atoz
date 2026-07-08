@@ -281,6 +281,13 @@ python examples/04_agent_loop.py
 - [AI 에이전트와 카카오페이 결제 오픈 API 연동하기: MCP Agent Toolkit 개발기 — 카카오페이 기술 블로그](https://tech.kakaopay.com/post/kakaopay-mcp-agent-toolkit/) — 결제 API를 에이전트 도구로 안전하게 노출한 국내 프로덕션 사례.
 - [How we built our multi-agent research system — Anthropic Engineering](https://www.anthropic.com/engineering/multi-agent-research-system) — 이 챕터의 루프가 여러 개로 확장되면 무엇이 어려워지는지 미리 보기.
 
+### 함께 보면 좋은 한국어 자료
+
+- [Function Calling: LLM이 외부 세계와 소통하는 방법 — SK DEVOCEAN](https://devocean.sk.com/blog/techBoardDetail.do?ID=167407) — LLM이 자연어 요청을 이해해 외부 API 호출로 이어가는 function calling의 동작 원리를 예제와 함께 쉽게 설명.
+- [LLM과 외부 세계를 연결하는 새로운 기술: Function Calling, MCP — Samsung Tech Blog](https://techblog.samsung.com/blog/article/69) — "파리 날씨는 어때?"가 어떻게 `get_weather("Paris")` 호출 JSON으로 바뀌는지, 도구 호출의 전체 흐름을 풀어준다.
+- [Agent의 기반이 되는 LLM Tool Calling: ① 개념 알기 — 유라클 블로그](https://uracle.blog/2025/03/28/agent%EC%9D%98-%EA%B8%B0%EB%B0%98%EC%9D%B4-%EB%90%98%EB%8A%94-llm-tool-calling/) — 도구 호출이 왜 에이전트의 기반인지, 이 챕터의 "생각→행동→관찰" 루프로 이어지는 개념을 정리.
+- [도구(Tools) — <랭체인LangChain 노트> WikiDocs](https://wikidocs.net/262582) — 도구 정의와 바인딩을 한국어 실습 코드로 따라해 볼 수 있는 무료 책의 해당 장.
+
 ## 참고 자료
 
 - [Tool Use 개요](https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview)
