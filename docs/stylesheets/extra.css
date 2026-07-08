@@ -160,6 +160,30 @@
   transition: background 0.12s ease;
 }
 
+/* 왼쪽 목록: 긴 제목은 줄바꿈 대신 한 줄 + 말줄임(…) — 목록이 흐트러지지 않게 */
+.md-sidebar--primary .md-nav__link .md-ellipsis {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 왼쪽 목록 밀도·정렬 다듬기 */
+.md-sidebar--primary .md-nav__item {
+  line-height: 1.45;
+}
+
+.md-sidebar--primary .md-nav__link {
+  margin-top: 0.1em;
+}
+
+/* 오른쪽 목차(TOC): 줄바꿈은 허용하되 둘째 줄부터 들여쓰기로 깔끔하게 */
+.md-sidebar--secondary .md-nav__link .md-ellipsis {
+  display: block;
+  padding-left: 0.6em;
+  text-indent: -0.6em;
+}
+
 .md-nav__link:hover {
   background: var(--aaz-accent-softer);
 }

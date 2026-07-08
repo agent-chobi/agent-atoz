@@ -87,7 +87,7 @@ nav:
       - 13. 디버깅 & 관측: 13-debugging-observability.md
       - 14. 권한 & 보안 & HITL: 14-permissions-security-hitl.md
       - 15. 평가 & 비용: 15-evaluation-cost.md
-      - 16. 셀프호스팅 런타임 (OpenClaw & Hermes): 16-self-hosted-runtimes.md
+      - 16. 셀프호스팅 런타임: 16-self-hosted-runtimes.md
       - 17. 하네스 엔지니어링 (캡스톤): 17-harness-engineering.md
   - "Phase F · 심화 & 실전":
       - 18. 구조화된 출력: 18-structured-output.md
@@ -102,4 +102,4 @@ nav:
       - 26. 파인튜닝으로 에이전트 강화: 26-finetuning-agents.md
   - 부록:
       - "A. SDK 비교 매트릭스": appendix-sdk-matrix.md
-      - "B. 스트리밍 전송 비교 (SSE·Streamable HTTP·WebSocket)": appendix-streaming-transports.md
+      - "B. 스트리밍 전송 비교": appendix-streaming-transports.md
