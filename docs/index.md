@@ -54,6 +54,7 @@
 | 25 | [신뢰성 & 워크플로 검증](25-reliability-validation.md) | 재시도·폴백·서킷브레이커, 단계별 검증 게이트 |
 | 26 | [파인튜닝으로 에이전트 강화](26-finetuning-agents.md) | SFT·DPO·RFT, 도구 호출 데이터셋, 언제 파인튜닝인가 |
 | — | [부록 A · SDK 비교 매트릭스](appendix-sdk-matrix.md) | 프레임워크 장단점 한눈에 |
+| — | [부록 B · 스트리밍 전송 비교](appendix-streaming-transports.md) | SSE vs Streamable HTTP vs WebSocket |
 
 !!! info "읽기 순서 팁"
     Phase F는 심화 모듈입니다 — 18·19장은 02장 직후에, 20장은 04장 직후에,

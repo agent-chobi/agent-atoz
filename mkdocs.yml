@@ -102,3 +102,4 @@ nav:
       - 26. 파인튜닝으로 에이전트 강화: 26-finetuning-agents.md
   - 부록:
       - "A. SDK 비교 매트릭스": appendix-sdk-matrix.md
+      - "B. 스트리밍 전송 비교 (SSE·Streamable HTTP·WebSocket)": appendix-streaming-transports.md
