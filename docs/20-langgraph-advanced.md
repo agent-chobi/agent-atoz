@@ -275,6 +275,12 @@ flowchart TD
 - [Introducing the LangGraph Functional API (LangChain 블로그)](https://www.langchain.com/blog/introducing-the-langgraph-functional-api) — @entrypoint/@task 설계 배경.
 - [LangChain and LangGraph 1.0 발표 (LangChain 블로그)](https://www.langchain.com/blog/langchain-langgraph-1dot0) — 1.0 마일스톤과 프로덕션 채택 기업.
 
+### 함께 보면 좋은 한국어 자료
+
+- [Human-in-the-loop(사람의 개입) — 랭체인 노트(WikiDocs)](https://wikidocs.net/265663) — interrupt로 그래프를 멈추고 승인·수정 후 재개하는 흐름을 한국어 코드로 따라 하는 무료 튜토리얼 장
+- [LangGraph 에이전트 워크플로우 실전 가이드: 멀티에이전트 오케스트레이션부터 프로덕션 배포까지 — Chaos and Order](https://www.youngju.dev/blog/ai-platform/langgraph_agent_workflow_guide) — 체크포인팅·스트리밍 등 고급 기능을 프로덕션 관점에서 한국어로 정리
+- [langgraph-tutorial — 테디노트 LAB(GitHub)](https://github.com/teddynote-lab/langgraph-tutorial) — 핵심 개념부터 심화 실습까지 단계별로 구성된 한국어 LangGraph 튜토리얼 저장소
+
 ## 참고 자료
 
 - [Functional API 레퍼런스 (@entrypoint/@task)](https://langchain-ai.github.io/langgraph/reference/func/)

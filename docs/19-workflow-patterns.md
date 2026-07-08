@@ -243,6 +243,12 @@ python examples/24_workflow_patterns.py
 - [AI Agents and Deterministic Workflows: A Spectrum (deepset 기술블로그)](https://www.deepset.ai/blog/ai-agents-and-deterministic-workflows-a-spectrum) — 워크플로우↔에이전트를 이분법이 아닌 스펙트럼으로 보는 실무 관점.
 - [The 2026 Guide to AI Agent Workflows (Vellum)](https://www.vellum.ai/blog/agentic-workflows-emerging-architectures-and-design-patterns) — 패턴별 프로덕션 아키텍처 사례 모음.
 
+### 함께 보면 좋은 한국어 자료
+
+- [효과적인 AI 에이전트 구축하기: 앤트로픽의 실전 설계 패턴 5가지 — blogbyash](https://blogbyash.com/translation/building-effective-agents/) — 이 장의 원전(Building Effective Agents)을 한국어로 옮기고 5패턴을 풀어 주는 번역 글
+- [Anthropic Report: Building Effective Agents — velog](https://velog.io/@looa0807/Anthropic-Building-effective-agents) — 프롬프트 체이닝·라우팅·병렬화 등 패턴별 요지를 한국어로 요약한 정리 노트
+- [[AI] 에이전트 vs 워크플로우 — 브런치](https://brunch.co.kr/@janghok/12) — "미리 정한 경로 vs 모델이 흐름을 소유"라는 이 장의 핵심 구분을 쉽게 설명하는 글
+
 ## 참고 자료
 
 - [Building Effective Agents — Anthropic](https://www.anthropic.com/research/building-effective-agents)

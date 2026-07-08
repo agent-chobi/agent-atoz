@@ -293,6 +293,14 @@ python examples/22_harness.py
 - [How We Build Effective Agents — Barry Zhang, Anthropic (AI Engineer Summit, YouTube)](https://youtu.be/D7_ipDqhtwk) — "모든 것에 에이전트를 만들지 마라, 단순하게 유지하라"는 이 장의 결론과 같은 메시지의 컨퍼런스 발표.
 - [awesome-harness-engineering — GitHub](https://github.com/ai-boost/awesome-harness-engineering) — 하네스 엔지니어링(도구·평가·메모리·MCP·권한·관측) 자료 큐레이션 목록.
 
+### 함께 보면 좋은 한국어 자료
+
+아직 한국어 자료가 드문 최신 주제이지만, 확인된 좋은 글들이 있습니다.
+
+- [하네스 엔지니어링으로 본 Deep Insight: 로컬 개발에서 프로덕션 운영까지의 설계 여정 — AWS 기술 블로그(한국어)](https://aws.amazon.com/ko/blogs/tech/harness-engineering-from-deep-insight/) — 하네스 개념을 실제 멀티에이전트 서비스의 설계 여정으로 풀어 주는 국내 실전 사례
+- [하네스 엔지니어링이란? 2026년 AI 에이전트 개발의 핵심으로 떠오른 이유 — 채널톡 블로그](https://channel.io/kr/blog/articles/what-is-harness-2611ddf1) — "왜 모델이 아니라 하네스인가"를 비개발자도 읽기 쉽게 정리한 입문 글
+- [하네스 엔지니어링, 왜 AI 에이전트 시대에 필수일까? — 와탭(WhaTap) 블로그](https://whatap.io/ko/blog/harness-engineering-ai-agents) — 뜻·방법·예시를 관측성 회사의 시각으로 간결하게 설명
+
 ## 6. 마치며
 
 에이전트 A to Z의 여정은 여기서 끝납니다. LLM API(01·02)에서 시작해 프레임워크(03–05),

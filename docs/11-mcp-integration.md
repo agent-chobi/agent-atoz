@@ -315,6 +315,12 @@ python examples/16_mcp_client.py
 - [Everything your team needs to know about MCP in 2026 — WorkOS](https://workos.com/blog/everything-your-team-needs-to-know-about-mcp-in-2026) — 도입 관점에서 정리한 MCP 현황 브리핑
 - [docker/mcp-registry (GitHub)](https://github.com/docker/mcp-registry) — Docker MCP Catalog의 소스 레지스트리. 컨테이너화된 검증 서버 목록
 
+### 함께 보면 좋은 한국어 자료
+
+- [AI 에이전트와 카카오페이 결제 오픈 API 연동하기: MCP Agent Toolkit 개발기 — 카카오페이 기술 블로그](https://tech.kakaopay.com/post/kakaopay-mcp-agent-toolkit/) — 결제라는 민감 도메인에 MCP를 도입한 이유와 8개 Tool 설계 과정을 쉽게 풀어 주는 국내 실전 사례
+- [PlayMCP: 제로부터 시작하는 MCP 플랫폼 개발 — 카카오 기술 블로그](https://tech.kakao.com/posts/734) — MCP 서버들을 모아 쓰는 플랫폼을 밑바닥부터 만든 카카오의 구축기
+- [MCP 왜 대세인가? 튜토리얼과 함께 살펴보기 — 테디노트](https://www.youtube.com/watch?v=VKIl0TIDKQg) (YouTube) — MCP의 개념과 배경을 한국어로 쉽게 설명하고 직접 만든 튜토리얼로 시연하는 영상
+
 ## 참고 자료
 
 - [Model Context Protocol 공식 사이트](https://modelcontextprotocol.io/)

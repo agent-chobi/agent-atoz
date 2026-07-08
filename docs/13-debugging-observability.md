@@ -268,6 +268,12 @@ flowchart TD
 - [OpenTelemetry GenAI Semantic Conventions — MLflow Docs](https://mlflow.org/docs/latest/genai/tracing/opentelemetry/genai-semconv/) — 컨벤션 필드를 실제 트레이싱 코드에 매핑해 보여주는 문서.
 - [How We Build Effective Agents — Barry Zhang, Anthropic (AI Engineer Summit, YouTube)](https://youtu.be/D7_ipDqhtwk) — "에이전트의 관점(컨텍스트)에서 에러를 보라"는 디버깅 관점을 담은 발표.
 
+### 함께 보면 좋은 한국어 자료
+
+- [LangSmith 추적 설정 — 랭체인 노트(WikiDocs)](https://wikidocs.net/250954) — 가입부터 환경변수 설정, 첫 트레이스 확인까지를 한국어 스크린샷과 함께 안내하는 무료 튜토리얼 장
+- [[LLM 개발기초] LangSmith 활용하기 — Hello Llama](https://hellollama.net/llm-%EC%B4%88%EA%B8%89%EA%B0%95%EC%A2%8C-7-langsmith-%ED%99%9C%EC%9A%A9%ED%95%98%EA%B8%B0/) — LLM 앱의 호출 추적·디버깅을 LangSmith로 시작하는 법을 초급자 눈높이로 설명
+- [LangSmith, 사용 후기 — sudormrf](https://sudormrf.run/2024/08/17/langsmith_review/) — 실제로 써 본 관점에서 무엇이 좋고 아쉬운지를 정리한 개인 블로그 후기
+
 ## 참고 자료
 
 - [LangSmith Tracing Quickstart](https://docs.langchain.com/langsmith/observability-quickstart)

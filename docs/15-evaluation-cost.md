@@ -303,6 +303,13 @@ main 대비 5%p 이상 하락하면 실패"). LLM 채점의 분산 때문에 1~2
 - [How to Calibrate LLM-as-Judge with Human Corrections — LangChain](https://www.langchain.com/resources/llm-as-a-judge) — 휴먼 교정 데이터로 judge를 보정하는 방법론.
 - [Klarna's AI assistant does the work of 700 full-time agents — OpenAI](https://openai.com/index/klarna/) — 대표적 기업 사례. 첫 달 230만 대화, 반복 문의 25% 감소 — 이후 2025년 복잡 케이스를 위해 인간 상담을 재확충한 후일담까지 포함해 "측정과 인간 감독"의 교훈으로 읽을 것.
 
+### 함께 보면 좋은 한국어 자료
+
+- [LLM as a Judge를 활용한 CodeBuddy 성능 평가 — 카카오 기술 블로그](https://tech.kakao.com/posts/690) — 사내 코드 리뷰 도구를 LLM judge로 평가한 국내 실전 사례. rubric 설계와 한계까지 공유
+- [LLM 모델이 LLM 성능을 평가한다: LLM-as-a-judge 알아보기 — SK 데보션(DEVOCEAN)](https://devocean.sk.com/blog/techBoardDetail.do?ID=166628) — LLM-as-a-judge의 원리·장점·주의점을 입문자 눈높이로 정리
+- [정책을 따르는 평가자, LLM-as-a-Judge — 하이퍼커넥트 기술 블로그](https://hyperconnect.github.io/2026/04/22/llm-as-a-judge-for-explanation-quality.html) — 평가 정책(rubric)을 judge에 심어 일관된 채점을 얻는 방법을 실무 사례로 해설
+- [Groundedness(할루시네이션) 평가 — 랭체인 노트(WikiDocs)](https://wikidocs.net/259216) — 근거 기반 답변 여부를 LangSmith 평가셋으로 측정하는 법을 다루는 무료 튜토리얼 장
+
 ## 6. 정리
 
 - 생성과 평가는 **반드시 분리** — 자기채점은 후하다.

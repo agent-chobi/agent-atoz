@@ -298,6 +298,14 @@ python examples/18_a2a_client.py
 - [Linux Foundation A2A Protocol Marks One Year — AIwire](https://www.hpcwire.com/aiwire/2026/04/09/linux-foundation-a2a-protocol-marks-one-year-with-broad-enterprise-and-cloud-adoption/) — 1주년 채택 현황의 외부 시각 리포트
 - [Agent Interoperability Protocols 2026: MCP, A2A, ACP — Zylos Research](https://zylos.ai/research/2026-03-26-agent-interoperability-protocols-mcp-a2a-acp-convergence/) — 에이전트 상호운용 프로토콜들의 역할 분담·수렴 방향 분석
 
+### 함께 보면 좋은 한국어 자료
+
+아직 한국어 자료가 드문 최신 주제입니다 — 확인된 자료 위주로 소개합니다.
+
+- [[번역] Agent2Agent (A2A) 프로토콜은 무엇인가요? — velog](https://velog.io/@surim014/a2a-protocol) — A2A의 등장 배경과 MCP와의 역할 구분을 한국어로 풀어 주는 번역 글
+- [Agent2Agent(A2A) 프로토콜 발표 — Google Developers Blog(한국어)](https://developers.googleblog.com/ko/a2a-a-new-era-of-agent-interoperability/) — Agent Card·task 등 핵심 개념을 담은 공식 발표문의 한국어판
+- ["MCP, A2A" 진짜 엔터프라이즈 적용할 수 있을지 집중탐구 — 테디노트](https://www.youtube.com/watch?v=z2rnK9COhuQ) (YouTube) — MCP와 A2A를 기업 환경에 적용할 때의 현실적 쟁점을 라이브 코딩과 함께 토론하는 영상
+
 ## 참고 자료
 
 - [A2A Protocol 공식 사이트](https://a2a-protocol.org/)

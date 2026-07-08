@@ -276,6 +276,12 @@ python examples/20_permissions_hitl.py --interactive  # 콘솔에서 직접 y/n 
 - [Four priorities for AI-powered identity and network access security in 2026 — Microsoft Security Blog](https://www.microsoft.com/en-us/security/blog/2026/01/20/four-priorities-for-ai-powered-identity-and-network-access-security-in-2026/) — 에이전트 시대 아이덴티티 보안의 기업 관점 우선순위.
 - [AI Agent Identity Is Solved Backwards — Cloud Security Alliance](https://cloudsecurityalliance.org/blog/2026/05/08/ai-agent-identity-is-being-solved-backwards-and-the-window-to-fix-it-is-now) — 에이전트 아이덴티티 설계가 왜 지금 중요한지에 대한 분석.
 
+### 함께 보면 좋은 한국어 자료
+
+- [LLM 애플리케이션을 위한 OWASP Top 10 한국어판(PDF) — OWASP Seoul](https://owasp.org/www-chapter-seoul/assets/files/TopTenForLLM-ko_KR.pdf) — 프롬프트 인젝션을 포함한 LLM 10대 위험 공식 문서의 한국어 번역판
+- [프롬프트 인젝션 공격이란 무엇인가요? — IBM(한국어)](https://www.ibm.com/kr-ko/topics/prompt-injection) — 지시와 데이터가 섞이는 구조적 취약점을 사례 중심으로 쉽게 풀어 주는 입문 글
+- [엔터프라이즈 LLM 보안: 프롬프트 인젝션 및 에이전트 오남용 탐지·보호 — pages.kr](https://blog.pages.kr/3836) — 에이전트 오남용까지 포함해 기업 환경의 탐지·방어 전략을 한국어로 정리
+
 ## 참고 자료
 
 - [MCP Authorization Spec (2025-11-25)](https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization)

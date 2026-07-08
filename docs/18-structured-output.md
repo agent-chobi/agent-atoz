@@ -293,6 +293,12 @@ flowchart TD
 - [How Structured Outputs and Constrained Decoding Work (Let's Data Science)](https://letsdatascience.com/blog/structured-outputs-making-llms-return-reliable-json) — 문법 컴파일과 토큰 마스킹 원리 해설.
 - [ChatAnthropic integration (LangChain 공식 문서)](https://docs.langchain.com/oss/python/integrations/chat/anthropic) — `with_structured_output(method="json_schema")` 공식 가이드.
 
+### 함께 보면 좋은 한국어 자료
+
+- [LLM Structured Output 실전 가이드 — JSON Mode, Tool Use, Pydantic 스키마 검증 — Chaos and Order](https://www.youngju.dev/blog/llm/2026-03-03-structured-output-json-mode-guide) — 주요 프로바이더의 구조화 출력 방식을 비교하고 프로덕션 사용법을 한국어로 정리
+- [LLM의 JSON 응답을 안정적으로 받는 방법: Structured Outputs — velog](https://velog.io/@arendt9797/LLM%EC%9D%98-JSON-%EC%9D%91%EB%8B%B5%EC%9D%84-%EC%95%88%EC%A0%95%EC%A0%81%EC%9C%BC%EB%A1%9C-%EB%B0%9B%EB%8A%94-%EB%B0%A9%EB%B2%95-Structured-Outputs) — JSON Mode와 Structured Outputs의 차이를 예제로 쉽게 풀어 주는 글
+- [JSON Parser — 랭체인 입문부터 응용까지(WikiDocs)](https://wikidocs.net/231384) — Pydantic 모델로 스키마를 정의하고 LangChain 출력 파서로 받는 법을 다루는 무료 책의 해당 장
+
 ## 참고 자료
 
 - [Structured outputs 공식 문서](https://platform.claude.com/docs/en/build-with-claude/structured-outputs)

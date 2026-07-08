@@ -325,6 +325,13 @@ WebSearch로 실존을 확인한 자료만 싣습니다.
 - [Agentic RAG with LangGraph — Qdrant 기술 블로그](https://qdrant.tech/documentation/tutorials-build-essentials/agentic-rag-langgraph/) — 벡터 DB 벤더 관점의 다단계 검색 에이전트 구축 튜토리얼.
 - [Context architecture is replacing RAG — VentureBeat](https://venturebeat.com/data/context-architecture-is-replacing-rag-as-agentic-ai-pushes-enterprise-retrieval-to-its-limits) — 하이브리드 검색 급증 등 2026년 엔터프라이즈 검색 지형 데이터.
 
+### 함께 보면 좋은 한국어 자료
+
+- [RAG, 들어는 봤는데… 내 서비스엔 어떻게 쓰지? — 우아한형제들 기술블로그](https://techblog.woowahan.com/25900/) — 필요성 평가부터 색인·생성·평가 파이프라인까지, 사내 RAG를 6단계로 구축한 과정을 쉽게 풀어 주는 실전기
+- [LangGraph Retrieval Agent를 활용한 동적 문서 검색 및 처리 — 테디노트](https://teddylee777.github.io/langgraph/langgraph-agentic-rag/) — 검색 결과 채점·재검색이 있는 Agentic RAG를 LangGraph로 만드는 한국어 실습
+- [RAG 시스템을 위한 문서 전처리 가이드 — SK 데보션(DEVOCEAN)](https://devocean.sk.com/blog/techBoardDetail.do?ID=167446&boardType=techBlog) — 청킹 이전 단계인 문서 전처리를 "AI가 이해하기 쉬운 형태"라는 관점으로 정리
+- [if(kakaoAI)2024 카카오엔터프라이즈의 RAG, '청크'가 핵심 — 바이라인네트워크](https://byline.network/2024/10/241022_kakaorag_3/) — if(kakao) 발표를 바탕으로 청킹이 RAG 품질을 좌우하는 이유를 쉽게 전달하는 기사
+
 ## 참고 자료
 
 - [Chroma 공식 문서](https://docs.trychroma.com/)

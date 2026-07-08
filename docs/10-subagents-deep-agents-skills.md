@@ -269,6 +269,12 @@ python examples/14_subagents.py
 - [State of Agent Engineering — LangChain](https://www.langchain.com/state-of-agent-engineering) — 에이전트 프로덕션 채택률과 하네스·스킬 도입 흐름을 보여주는 조사 보고서
 - [Harrison Chase on Deep Agents — NVIDIA AI Podcast (YouTube)](https://www.youtube.com/watch?v=c-fsL0gsmo0) — deepagents 설계 철학을 창시자가 직접 설명
 
+### 함께 보면 좋은 한국어 자료
+
+- [Claude Code 심화 활용법 — 하이퍼리즘 기술 블로그](https://tech.hyperithm.com/claude_code_guides_2) — 서브에이전트를 "독립 세션에서 도는 전문 어시스턴트"로 만드는 법을 실무 예제로 해설
+- [11. 스킬(Skills) — 클로드 코드 가이드(WikiDocs)](https://wikidocs.net/333426) — Agent Skills 오픈 표준과 SKILL.md 작성법을 한국어로 차근차근 설명하는 무료 책의 해당 장
+- [Claude Code 완전 가이드: 서브에이전트, 훅, Agent SDK — Chaos and Order](https://www.youngju.dev/blog/culture/2026-03-22-claude-code-agentic-coding-guide-2025) — 서브에이전트 병렬 작업부터 Agent SDK까지 이 장의 주제를 한 편으로 훑는 정리 글
+
 ## 참고 자료
 
 - [deepagents (GitHub)](https://github.com/langchain-ai/deepagents)

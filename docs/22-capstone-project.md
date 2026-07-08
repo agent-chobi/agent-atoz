@@ -362,6 +362,12 @@ WebSearch로 실존을 확인한 자료만 싣습니다.
 - [LangSmith Evaluation — 공식 문서](https://docs.smith.langchain.com/evaluation) — Step 5의 judge를 평가셋·대시보드로 확장하는 방법.
 - [Interrupt 2025 Recap — LangChain 블로그](https://www.langchain.com/blog/interrupt-2025-recap) — Cisco·Uber·Replit·LinkedIn 등의 프로덕션 에이전트 사례 발표(영상 링크 포함) 정리.
 
+### 함께 보면 좋은 한국어 자료
+
+- [LangGraph로 웹 검색 Agent 만들기 (Cookbook) — 네이버클라우드 포럼](https://www.ncloud-forums.com/topic/499/) — 이 캡스톤 Step 1(검색 도구를 쓰는 리서치 에이전트)에 해당하는 부분을 한국어로 따라 만드는 쿡북
+- [Amazon Bedrock과 LangGraph로 Multi Agent 시스템 구현하기 — AWS 기술 블로그(한국어)](https://aws.amazon.com/ko/blogs/tech/build-multi-agent-systems-with-langgraph-and-amazon-bedrock/) — Supervisor가 전문 에이전트들에 작업을 위임하는 구조를 실제 코드로 구현한 한국어 가이드
+- [langchain-kr — 테디노트 LangChain 한국어 튜토리얼(GitHub)](https://github.com/teddylee777/langchain-kr) — tool use부터 멀티에이전트·평가까지, 이 캡스톤의 조각들을 한국어 예제로 복습할 수 있는 저장소
+
 ## 참고 자료
 
 - [Building Effective Agents — Anthropic](https://www.anthropic.com/research/building-effective-agents)

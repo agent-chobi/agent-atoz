@@ -235,6 +235,13 @@ channels:
 - [Hermes vs OpenClaw: Local AI Agents Compared — Turing Post](https://www.turingpost.com/p/hermes) — 로컬 에이전트 관점의 비교 해설.
 - [Hermes Agent vs OpenClaw, Paperclip, and the Best Open-Source AI Agents in 2026 — Contabo Blog](https://contabo.com/blog/hermes-agent-vs-openclaw-paperclip-and-the-best-open-source-ai-agents-in-2026/) — 셀프호스팅(VPS) 운영자 관점의 실전 비교.
 
+### 함께 보면 좋은 한국어 자료
+
+아직 한국어 자료가 드문 최신 주제입니다(특히 Hermes) — 확인된 OpenClaw 체험기 위주로 소개합니다.
+
+- [오픈클로(OpenClaw) 나도 한 번 설치해 볼까? — 브런치](https://brunch.co.kr/@teumlab/54) — 비개발자도 따라갈 수 있게 쓴 OpenClaw 설치·첫 사용 체험기
+- [OpenClaw를 뜯어보고, 홈서버에 24/7 AI 에이전트를 올린 이야기 — Medium](https://medium.com/@dndb3599/openclaw%EB%A5%BC-%EB%9C%AF%EC%96%B4%EB%B3%B4%EA%B3%A0-%ED%99%88%EC%84%9C%EB%B2%84%EC%97%90-24-7-ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8%EB%A5%BC-%EC%98%AC%EB%A6%B0-%EC%9D%B4%EC%95%BC%EA%B8%B0-1ba281919e23) — Gateway 구조·Heartbeat 토큰 비용 등 내부 동작을 뜯어보며 상시 운영 시 주의점을 정리한 글
+
 ## 5. 정리
 
 - 런타임은 **오케스트레이션 배관(세션·채널·도구·모델)을 물려받는** 선택지입니다.
