@@ -95,5 +95,10 @@ nav:
       - 20. LangGraph 심화: 20-langgraph-advanced.md
       - 21. RAG & Agentic RAG: 21-rag-agentic-rag.md
       - 22. 통합 프로젝트 (단계별): 22-capstone-project.md
+  - "Phase G · 프로덕션 심화":
+      - 23. 가드레일 & 미들웨어: 23-guardrails-middleware.md
+      - 24. 배포와 운영: 24-deployment-operations.md
+      - 25. 신뢰성 & 워크플로 검증: 25-reliability-validation.md
+      - 26. 파인튜닝으로 에이전트 강화: 26-finetuning-agents.md
   - 부록:
       - "A. SDK 비교 매트릭스": appendix-sdk-matrix.md

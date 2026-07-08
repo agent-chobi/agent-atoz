@@ -48,6 +48,11 @@
 | 20 | [LangGraph 심화](20-langgraph-advanced.md) | 서브그래프, 스트리밍, Functional API, Durable Execution |
 | 21 | [RAG & Agentic RAG](21-rag-agentic-rag.md) | 검색 파이프라인, 검색을 도구로 쥔 에이전트 |
 | 22 | [통합 프로젝트 (단계별)](22-capstone-project.md) | 미니 리서치 팀을 Step 0→5로 직접 구축 |
+| **G** | **프로덕션 심화** | |
+| 23 | [가드레일 & 미들웨어](23-guardrails-middleware.md) | before/after 훅, 다층 방어, 인젝션 대응 |
+| 24 | [배포와 운영](24-deployment-operations.md) | 컨테이너·PostgresSaver·SSE 스트리밍 서빙 |
+| 25 | [신뢰성 & 워크플로 검증](25-reliability-validation.md) | 재시도·폴백·서킷브레이커, 단계별 검증 게이트 |
+| 26 | [파인튜닝으로 에이전트 강화](26-finetuning-agents.md) | SFT·DPO·RFT, 도구 호출 데이터셋, 언제 파인튜닝인가 |
 | — | [부록 A · SDK 비교 매트릭스](appendix-sdk-matrix.md) | 프레임워크 장단점 한눈에 |
 
 !!! info "읽기 순서 팁"
